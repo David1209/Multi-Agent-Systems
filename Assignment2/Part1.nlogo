@@ -4,7 +4,7 @@
 
 ;; Assignment 2.1
 ;; Authors: David van Erkelens (10264019> <me@davidvanerkelens.nl>
-;;          Ysbrand Galama (xxxxxxx) <y.galama@uva.nl>
+;;          Ysbrand Galama (10262067) <y.galama@uva.nl>
 
 
 ; --- Assignment 2 - Template ---
@@ -80,6 +80,8 @@ end
 to execute-actions
   ; Here you should put the code related to the actions performed by your smart vacuum cleaner: moving and cleaning.
   ; You can separate these actions into two different methods if you want, but these methods should only be called from here
+
+  ; for every position, tell the agent where to move next
   if(in 0 0 and facing "north" and not dirt 0 0) [do "forward" stop]
   if(in 0 1 and facing "north" and not dirt 0 1) [do "forward" stop]
   if(in 0 2 and facing "north" and not dirt 0 2) [do "turn" stop]
@@ -108,7 +110,7 @@ to execute-actions
 
   if(in 2 1 and facing "north" and not dirt 2 1) [do "forward" stop]
 
-
+  ; forall x,y[ if in x,y and dirt in x,y -> clean x,y]
   if(in 0 0 and dirt 0 0) [suck 0 0 stop]
   if(in 0 1 and dirt 0 1) [suck 0 1 stop]
   if(in 0 2 and dirt 0 2) [suck 0 2 stop]
@@ -154,7 +156,6 @@ to suck [x y]
     set pcolor white
   ]
 end
-
 
 
 @#$#@#$#@
