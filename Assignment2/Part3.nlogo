@@ -50,12 +50,17 @@ end
 to setup-patches
   ; In this method you may create the environment (patches), using colors to define dirty and cleaned cells.
   ask patches [
-    ifelse random 100 < dirt_pct [
+    ifelse random 100 < obs_pct and pxcor != 0 and pycor != 0 [
       ;; The patch is dirty
-      set pcolor grey
+      set pcolor black
     ][
       ;; The patch is clean
-      set pcolor white
+      ifelse random 100 < dirt_pct [
+        set pcolor grey
+      ]
+      [
+        set pcolor white
+      ]
     ]
   ]
   ; Save the maximum coordinates in the global variable
@@ -94,17 +99,21 @@ to execute-actions
   ; Clean if there's dirt
   if(dirt x y) [suck x y stop]
 
-  ; If we are at the top of an even row, we have to face east
-  if(in x ysize and not dirt x ysize and not facing "east" and x mod 2 = 0) [do "turn" stop]
+  if(blocked) [random_direction stop]
+
+  if(random 100 <= 20) [random_direction stop]
+
+   ; If we are at the top of an even row, we have to face east
+  ;if(in x ysize and not dirt x ysize and not facing "east" and x mod 2 = 0) [do "turnright" stop]
 
   ; If we are at the top of an odd row, we have to face south
-  if(in x ysize and not dirt x ysize and not facing "south" and x mod 2 = 1) [do "turn" stop]
+  ;if(in x ysize and not dirt x ysize and not facing "south" and x mod 2 = 1) [do "turnright" stop]
 
   ; If we are at the bottom of an odd row, we have to face east
-  if(in x 0 and not dirt x 0 and not facing "east" and x mod 2 = 1) [do "turn" stop]
+  ;if(in x 0 and not dirt x 0 and not facing "east" and x mod 2 = 1) [do "turnleft" stop]
 
   ; If we are at the bottom of an even row, we have to face north
-  if(in x 0 and not dirt x 0 and not facing "north" and x mod 2 = 0) [do "turn" stop]
+  ;if(in x 0 and not dirt x 0 and not facing "north" and x mod 2 = 0) [do "turnleft" stop]
 
   ; In all other cases, just move forward
   if(in x y and not dirt x y) [do "forward" stop]
@@ -131,7 +140,12 @@ end
 
 ; Procedure to do a turn or move forward
 to do [act]
-  if (act = "turn") [
+  if (act = "turnleft") [
+    ask turtle 0 [
+      set heading heading - 90
+    ]
+  ]
+  if (act = "turnright") [
     ask turtle 0 [
       set heading heading + 90
     ]
@@ -149,6 +163,35 @@ to suck [x y]
     set pcolor white
   ]
 end
+
+; Procedure to report if the patch ahead is blocked
+to-report blocked
+  let ans true
+  ask turtle 0 [
+    if (patch-ahead 1 != nobody)[
+      set ans ([pcolor] of patch-ahead 1 = black)
+    ]
+  ]
+  report ans
+end
+
+to random_direction
+  ifelse random 100 < 50 [
+    do "turnleft"
+  ]
+  [
+    do "turnright"
+  ]
+end
+
+
+
+
+
+
+
+
+
 @#$#@#$#@
 GRAPHICS-WINDOW
 292
@@ -164,8 +207,8 @@ GRAPHICS-WINDOW
 1
 1
 0
-1
-1
+0
+0
 1
 0
 20
@@ -231,7 +274,7 @@ dirt_pct
 dirt_pct
 0
 100
-31
+52
 1
 1
 NIL
@@ -263,7 +306,7 @@ obs_pct
 obs_pct
 0
 100
-30
+28
 1
 1
 NIL
