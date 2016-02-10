@@ -37,8 +37,6 @@ end
 
 ; --- Main processing cycle ---
 to go
-  ; Check if turtle 0 is in the last cell
-  if([xcor] of turtle 0 = xsize and [ycor] of turtle 0 = ysize and not dirt xsize ysize) [stop]
   ; This method executes the main processing cycle of an agent.
   ; For Assignment 2, this only involves the execution of actions (and advancing the tick counter).
   execute-actions
@@ -50,8 +48,8 @@ end
 to setup-patches
   ; In this method you may create the environment (patches), using colors to define dirty and cleaned cells.
   ask patches [
-    ifelse random 100 < obs_pct and pxcor != 0 and pycor != 0 [
-      ;; The patch is dirty
+    ifelse random 100 < obs_pct and (pxcor > 0 or pycor > 0) [
+      ;; The patch is blocked
       set pcolor black
     ][
       ;; The patch is clean
@@ -274,7 +272,7 @@ dirt_pct
 dirt_pct
 0
 100
-52
+0
 1
 1
 NIL
@@ -306,7 +304,7 @@ obs_pct
 obs_pct
 0
 100
-28
+100
 1
 1
 NIL
