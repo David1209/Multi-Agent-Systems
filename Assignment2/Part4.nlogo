@@ -97,10 +97,59 @@ to execute-actions
 
   ; Clean if there's dirt
   if(dirt x y) [suck x y stop]
+  ask patch x y [set pcolor yellow]
 
-  if(blocked) [random_direction stop]
 
-  if(doned and random 100 <= 20) [random_direction stop]
+  if (not (doned or blocked) ) [ do "forward" stop]
+
+  let foundx -1
+  let foundy -1
+  let rad 0
+  while [rad < rad-max ] [
+    set rad rad + 1
+
+    ask turtle 0 [ ask patches in-radius 1
+      [
+        if((pcolor = grey or pcolor = white)) [
+          set foundx pxcor
+          set foundy pycor
+        ]
+      ]
+    ]
+    if (foundx != -1) [
+      ask turtle 0 [facexy foundx foundy]
+      round-heading
+      print rad
+      stop
+    ]
+  ]
+
+  if (not blocked) [ do "forward" stop ]
+
+  set rad 0
+  while [rad < rad-max] [
+    set rad rad + 1
+    if (foundx = -1) [
+      ask turtle 0 [ ask patches in-radius 2
+        [
+          if(pcolor != black and random 100 < 20) [
+            set foundx pxcor
+            set foundy pycor
+          ]
+        ]
+      ]
+    ]
+    if (foundx != -1) [
+      ask turtle 0 [facexy foundx foundy]
+      round-heading
+      print "No"
+      print rad
+      stop
+    ]
+  ]
+
+  ;if(blocked) [random_direction stop]
+  if(random 100 <= 20) [random_direction stop]
 
    ; If we are at the top of an even row, we have to face east
   ;if(in x ysize and not dirt x ysize and not facing "east" and x mod 2 = 0) [do "turnright" stop]
@@ -115,8 +164,8 @@ to execute-actions
   ;if(in x 0 and not dirt x 0 and not facing "north" and x mod 2 = 0) [do "turnleft" stop]
 
   ; In all other cases, just move forward
-  if(in x y and not dirt x y) [do "forward"]
-  ask patch x y [ set pcolor yellow ]
+  ;if(in x y and not dirt x y) [do "forward"]
+  ;ask patch x y [ set pcolor yellow ]
 end
 
 ; Procedure to report if a patch is dirty
@@ -194,6 +243,14 @@ to random_direction
   ]
 end
 
+to round-heading
+  ask turtle 0 [
+    if (heading <= 45 or heading > 315) [ set heading 0]
+    if (heading <= 135 and heading > 45) [ set heading 90]
+    if (heading <= 225 and heading > 135) [ set heading 180]
+    if (heading <= 315 and heading > 225) [ set heading 270]
+  ]
+end
 
 
 
@@ -204,11 +261,11 @@ end
 GRAPHICS-WINDOW
 292
 10
-1562
-401
+1142
+481
 -1
 -1
-60.0
+40.0
 1
 10
 1
@@ -221,7 +278,7 @@ GRAPHICS-WINDOW
 0
 20
 0
-5
+10
 1
 1
 1
@@ -282,7 +339,7 @@ dirt_pct
 dirt_pct
 0
 100
-100
+52
 1
 1
 NIL
@@ -314,7 +371,22 @@ obs_pct
 obs_pct
 0
 100
+23
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+35
+265
+207
+298
+rad-max
+rad-max
 0
+30
+30
 1
 1
 NIL
