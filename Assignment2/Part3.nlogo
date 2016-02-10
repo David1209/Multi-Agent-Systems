@@ -4,7 +4,7 @@
 
 ;; Assignment 2.2
 ;; Authors: David van Erkelens (10264019> <me@davidvanerkelens.nl>
-;;          Ysbrand Galama (xxxxxxx) <y.galama@uva.nl>
+;;          Ysbrand Galama (10262067) <y.galama@uva.nl>
 
 
 ; --- Assignment 2 - Template ---
@@ -183,7 +183,6 @@ to random_direction
     do "turnright"
   ]
 end
-
 
 
 
