@@ -122,14 +122,17 @@ to execute-actions
   if(in 2 2 and dirt 2 2) [suck 2 2 stop]
 end
 
+; Procedure to report is a patch is dirty
 to-report dirt[x y]
   report ([pcolor] of patch x y = grey)
 end
 
+; Procedure to report if the vaccuum is in x, y
 to-report in[x y]
   report ([xcor] of turtle 0 = x and [ycor] of turtle 0 = y)
 end
 
+; Procedure to report where the turtle is facing
 to-report facing [n]
   if (n = "east" and [heading] of turtle 0 = 90) [report true]
   if (n = "north" and [heading] of turtle 0 = 0) [report true]
@@ -138,6 +141,7 @@ to-report facing [n]
   report false
 end
 
+; Procedure to let the vaccuum do something
 to do [act]
   if (act = "turn") [
     ask turtle 0 [
@@ -151,12 +155,12 @@ to do [act]
   ]
 end
 
+; Procedure to clean a dirty patch
 to suck [x y]
   ask patch x y [
     set pcolor white
   ]
 end
-
 
 @#$#@#$#@
 GRAPHICS-WINDOW

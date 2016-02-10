@@ -4,7 +4,7 @@
 
 ;; Assignment 2.2
 ;; Authors: David van Erkelens (10264019> <me@davidvanerkelens.nl>
-;;          Ysbrand Galama (10262067) <y.galama@uva.nl>
+;;          Ysbrand Galama (xxxxxxx) <y.galama@uva.nl>
 
 
 ; --- Assignment 2 - Template ---
@@ -37,6 +37,8 @@ end
 
 ; --- Main processing cycle ---
 to go
+  ; Stop if everything is clean
+  if(count patches with [pcolor = grey] = 0) [stop]
   ; This method executes the main processing cycle of an agent.
   ; For Assignment 2, this only involves the execution of actions (and advancing the tick counter).
   execute-actions
@@ -52,11 +54,13 @@ to setup-patches
       ;; The patch is blocked
       set pcolor black
     ][
-      ;; The patch is clean
+      ;; The patch is maybe dirty
       ifelse random 100 < dirt_pct [
+        ; It is
         set pcolor grey
       ]
       [
+        ; Nope, it's clean
         set pcolor white
       ]
     ]
@@ -97,21 +101,11 @@ to execute-actions
   ; Clean if there's dirt
   if(dirt x y) [suck x y stop]
 
+  ; Go left or right if the following patch is blocked
   if(blocked) [random_direction stop]
 
-  if(random 100 <= 20) [random_direction stop]
-
-   ; If we are at the top of an even row, we have to face east
-  ;if(in x ysize and not dirt x ysize and not facing "east" and x mod 2 = 0) [do "turnright" stop]
-
-  ; If we are at the top of an odd row, we have to face south
-  ;if(in x ysize and not dirt x ysize and not facing "south" and x mod 2 = 1) [do "turnright" stop]
-
-  ; If we are at the bottom of an odd row, we have to face east
-  ;if(in x 0 and not dirt x 0 and not facing "east" and x mod 2 = 1) [do "turnleft" stop]
-
-  ; If we are at the bottom of an even row, we have to face north
-  ;if(in x 0 and not dirt x 0 and not facing "north" and x mod 2 = 0) [do "turnleft" stop]
+  ; In 20% of the times, just go left or right
+  if(random 100 < 20) [random_direction stop]
 
   ; In all other cases, just move forward
   if(in x y and not dirt x y) [do "forward" stop]
@@ -173,6 +167,7 @@ to-report blocked
   report ans
 end
 
+; Move right or left, 50/50 chance
 to random_direction
   ifelse random 100 < 50 [
     do "turnleft"
@@ -271,7 +266,7 @@ dirt_pct
 dirt_pct
 0
 100
-0
+100
 1
 1
 NIL
@@ -303,7 +298,7 @@ obs_pct
 obs_pct
 0
 100
-100
+0
 1
 1
 NIL
