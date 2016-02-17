@@ -42,7 +42,6 @@ vacuums-own [beliefs desire intention]
 ; --- Setup ---
 to setup
   clear-all
-  reset-ticks
   set time 0
   setup-patches
   setup-vacuums
@@ -86,6 +85,7 @@ to setup-vacuums
     set heading 0
     set shape "airplane"
     set beliefs []
+    set intention ""
   ]
 end
 
@@ -93,6 +93,7 @@ end
 ; --- Setup ticks ---
 to setup-ticks
   ; In this method you may start the tick counter.
+  reset-ticks
 end
 
 
@@ -101,6 +102,14 @@ to update-desires
   ; You should update your agent's desires here.
   ; At the beginning your agent should have the desire to clean all the dirt.
   ; If it realises that there is no more dirt, its desire should change to something like 'stop and turn off'.
+  ask vacuum 0 [
+    ifelse(length beliefs > 0) [
+      set desire "clean"
+    ]
+    [
+      set desire "stop"
+    ]
+  ]
 end
 
 
@@ -127,12 +136,60 @@ end
 to update-intentions
   ; You should update your agent's intentions here.
   ; The agent's intentions should be dependent on its beliefs and desires.
+  ask vacuum 0 [
+    let l item 0 beliefs
+    let x item 0 l
+    let y item 1 l
+    ifelse(desire = "clean") [
+      ifelse(xcor = x and ycor = y) [
+        set intention "suck"
+      ]
+      [
+        let dir towardsxy x y
+        ifelse (heading = dir) [
+          set intention "move"
+        ]
+        [
+          set intention "turn"
+        ]
+      ]
+    ]
+    [
+      set intention "rest"
+    ]
+  ]
 end
 
 
 ; --- Execute actions ---
 to execute-actions
   ; Here you should put the code related to the actions performed by your agent: moving and cleaning (and in Assignment 3.3, throwing away dirt).
+  ask vacuum 0 [
+    let l item 0 beliefs
+    let x item 0 l
+    let y item 1 l
+    if(intention = "suck")
+    [
+      ask patch x y [
+        set pcolor white
+      ]
+      set beliefs but-first beliefs
+    ]
+    if(intention = "move")
+    [
+      ifelse(distancexy x y < 1)
+      [
+        setxy x y
+      ]
+      [
+        fd 1
+      ]
+    ]
+    if(intention = "turn")
+    [
+      facexy x y
+    ]
+  ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
