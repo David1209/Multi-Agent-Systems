@@ -85,20 +85,35 @@ to setup-vacuums
     set heading 0
     set shape "airplane"
     set beliefs []
+    set beliefs lput 0 beliefs
+    let l []
+    set l lput xcor l
+    set l lput ycor l
+    set beliefs lput l beliefs
+    set beliefs lput [] beliefs
 
 
     set intention ""
   ]
-    ask patches [
-      if (pcolor = grey) [
-        let l []
-        set l lput pxcor l
-        set l lput pycor l
-        ask vacuums [
-          set beliefs lput l beliefs
-        ]
+  ask patches [
+    if (pcolor = grey) [
+      let l []
+      set l lput pxcor l
+      set l lput pycor l
+      ask vacuums [
+        let contains item 0 beliefs
+        let trash-pos item 1 beliefs
+        let to-clean item 2 beliefs
+
+        set to-clean lput l to-clean
+
+        set beliefs []
+        set beliefs lput contains beliefs
+        set beliefs lput trash-pos beliefs
+        set beliefs lput to-clean beliefs
       ]
     ]
+  ]
 end
 
 
@@ -114,8 +129,14 @@ to update-desires
   ; You should update your agent's desires here.
   ; At the beginning your agent should have the desire to clean all the dirt.
   ; If it realises that there is no more dirt, its desire should change to something like 'stop and turn off'.
-  ask vacuum 0 [
-    ifelse(length beliefs > 0) [
+  ask vacuums [
+    let contains item 0 beliefs
+    let to-clean item 2 beliefs
+    if (contains = container-size) [
+      set desire "lets-empty"
+      stop
+    ]
+    ifelse(length to-clean > 0) [
       set desire "clean"
     ]
     [
@@ -132,9 +153,22 @@ to update-beliefs
  ; This belief set needs to be updated frequently according to the cleaning actions: if you clean dirt, you do not believe anymore there is a dirt at that location.
  ; In Assignment 3.3, your agent also needs to know where is the garbage can.
  ask vacuums [
+   let contains item 0 beliefs
+   let trash-pos item 1 beliefs
+   let to-clean item 2 beliefs
+
    if (intention = "suck") [
-     set beliefs but-first beliefs
+     set to-clean but-first to-clean
    ]
+
+   set to-clean sort-by [
+     sqrt ( ( item 0 ?1 - xcor ) ^ 2 + ( item 1 ?1 - ycor ) ^ 2 ) < sqrt ( ( item 0 ?2 - xcor ) ^ 2 + ( item 1 ?2 - ycor ) ^ 2 )
+   ] to-clean
+
+   set beliefs []
+   set beliefs lput contains beliefs
+   set beliefs lput trash-pos beliefs
+   set beliefs lput to-clean beliefs
  ]
 end
 
@@ -144,26 +178,40 @@ to update-intentions
   ; You should update your agent's intentions here.
   ; The agent's intentions should be dependent on its beliefs and desires.
   ask vacuums [
-    ifelse(desire = "clean") [
-      let l item 0 beliefs
-      let x item 0 l
-      let y item 1 l
+    ifelse(desire = "lets-empty") [
+      let trash-pos item 1 beliefs
+      ifelse(xcor = item 0 trash-pos and ycor = item 1 trash-pos) [
+        set intention "empty"
+      ] [
+        ifelse( heading = towardsxy item 0 trash-pos item 1 trash-pos ) [
+          set intention "move-to-trash"
+        ] [
+          set intention "turn-to-trash"
+        ]
+      ]
+    ] [
+     ifelse(desire = "clean") [
+       let to-clean item 2 beliefs
+       let l item 0 to-clean
+       let x item 0 l
+       let y item 1 l
 
-      ifelse(xcor = x and ycor = y) [
-        set intention "suck"
-      ]
-      [
-        let dir towardsxy x y
-        ifelse (heading = dir) [
-          set intention "move"
-        ]
-        [
-          set intention "turn"
-        ]
-      ]
-    ]
-    [
-      set intention "rest"
+       ifelse(xcor = x and ycor = y) [
+         set intention "suck"
+       ]
+       [
+         let dir towardsxy x y
+         ifelse (heading = dir) [
+           set intention "move"
+         ]
+         [
+           set intention "turn"
+         ]
+       ]
+     ]
+     [
+       set intention "rest"
+     ]
     ]
   ]
 end
@@ -172,16 +220,37 @@ end
 ; --- Execute actions ---
 to execute-actions
   ; Here you should put the code related to the actions performed by your agent: moving and cleaning (and in Assignment 3.3, throwing away dirt).
-  ask vacuum 0 [
+  ask vacuums [
     if(intention = "rest") [show "clean!!" stop]
-    let l item 0 beliefs
+    let to-clean item 2 beliefs
+    let trash-pos item 1 beliefs
+    let contains item 0 beliefs
+    let l item 0 to-clean
     let x item 0 l
     let y item 1 l
+
+    if(intention = "empty") [
+      set contains 0
+    ]
+    if(intention = "move-to-trash") [
+      ifelse(distancexy item 0 trash-pos item 1 trash-pos < 1)
+      [
+        setxy item 0 trash-pos item 1 trash-pos
+      ]
+      [
+        fd 1
+      ]
+    ]
+    if(intention = "turn-to-trash") [
+      facexy item 0 trash-pos item 1 trash-pos
+    ]
     if(intention = "suck")
     [
       ask patch x y [
         set pcolor white
       ]
+
+      set contains contains + 1
     ]
     if(intention = "move")
     [
@@ -197,6 +266,10 @@ to execute-actions
     [
       facexy x y
     ]
+    set beliefs []
+    set beliefs lput contains beliefs
+    set beliefs lput trash-pos beliefs
+    set beliefs lput to-clean beliefs
   ]
 end
 @#$#@#$#@
@@ -236,7 +309,7 @@ dirt_pct
 dirt_pct
 0
 100
-3
+53
 1
 1
 NIL
@@ -347,6 +420,21 @@ The agent's current intention.
 17
 1
 11
+
+SLIDER
+18
+363
+190
+396
+container-size
+container-size
+0
+100
+10
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
