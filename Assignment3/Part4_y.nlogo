@@ -56,6 +56,7 @@ end
 to go
   ; This method executes the main processing cycle of an agent.
   ; For Assignment 3, this involves updating desires, beliefs and intentions, and executing actions (and advancing the tick counter).
+  update-counters
   update-beliefs
   update-desires
   update-intentions
@@ -89,13 +90,8 @@ to setup-vacuums
     set shape "fish"
     set beliefs []
     set beliefs lput 0 beliefs
-    let l []
-    set l lput xcor l
-    set l lput ycor l
-    set beliefs lput l beliefs
     set beliefs lput [] beliefs
-
-
+    set beliefs lput [] beliefs
     set intention ""
   ]
   ask patches [
@@ -118,13 +114,34 @@ to setup-vacuums
     ]
   ]
 
-  create-garbages 1 [
-      setxy 0 min-pycor
-      set color pink
-      set heading 0
-      set shape "house"
-      set stuff 0
+  create-garbages garbage-amount [
+    setxy random-pxcor random-pycor
+    set color pink
+    set heading 0
+    set shape "house"
+    set stuff 0
+  ]
+  ;ask garbage 2 [
+  ;  setxy 0 max-pycor
+  ;]
+
+  ask garbages [
+    let l []
+    set l lput xcor l
+    set l lput ycor l
+    ask vacuums [
+      let contains item 0 beliefs
+      let trash-poses item 1 beliefs
+      let to-clean item 2 beliefs
+
+      set trash-poses lput l trash-poses
+
+      set beliefs []
+      set beliefs lput contains beliefs
+      set beliefs lput trash-poses beliefs
+      set beliefs lput to-clean beliefs
     ]
+  ]
 end
 
 
@@ -134,6 +151,12 @@ to setup-ticks
   reset-ticks
 end
 
+to update-counters
+  ask garbages [
+    set label stuff
+    set label-color white
+  ]
+end
 
 ; --- Update desires ---
 to update-desires
@@ -143,7 +166,7 @@ to update-desires
   ask vacuum 0 [
     let contains item 0 beliefs
     let to-clean item 2 beliefs
-    if (contains = container-size) [
+    if (contains >= container-size) [
       set desire "lets-empty"
       stop
     ]
@@ -169,7 +192,7 @@ to update-beliefs
  ; In Assignment 3.3, your agent also needs to know where is the garbage can.
  ask vacuum 0 [
    let contains item 0 beliefs
-   let trash-pos item 1 beliefs
+   let trash-poses item 1 beliefs
    let to-clean item 2 beliefs
 
    if (intention = "suck") [
@@ -181,9 +204,13 @@ to update-beliefs
      ;sqrt ( ( item 0 ?1 - xcor ) ^ 2 + ( item 1 ?1 - ycor ) ^ 2 ) < sqrt ( ( item 0 ?2 - xcor ) ^ 2 + ( item 1 ?2 - ycor ) ^ 2 )
    ] to-clean
 
+   set trash-poses sort-by [
+     distancexy item 0 ?1 item 1 ?1 < distancexy item 0 ?2 item 1 ?2
+   ] trash-poses
+
    set beliefs []
    set beliefs lput contains beliefs
-   set beliefs lput trash-pos beliefs
+   set beliefs lput trash-poses beliefs
    set beliefs lput to-clean beliefs
  ]
 end
@@ -195,7 +222,7 @@ to update-intentions
   ; The agent's intentions should be dependent on its beliefs and desires.
   ask vacuum 0 [
     ifelse(desire = "lets-empty") [
-      let trash-pos item 1 beliefs
+      let trash-pos item 0 item 1 beliefs
       ifelse(xcor = item 0 trash-pos and ycor = item 1 trash-pos) [
         set intention "empty"
       ] [
@@ -239,12 +266,17 @@ to execute-actions
   ask vacuum 0 [
     if(intention = "rest") [show "clean!!" stop]
     let to-clean item 2 beliefs
-    let trash-pos item 1 beliefs
+    let trash-poses item 1 beliefs
+    let trash-pos item 0 trash-poses
     let contains item 0 beliefs
 
     ifelse(intention = "empty") [
-      ask garbage 1 [
-        set stuff stuff + contains
+      let tempx xcor
+      let tempy ycor
+      ask garbages [
+        if (xcor = tempx and ycor = tempy) [
+          set stuff stuff + contains
+        ]
       ]
       set contains 0
     ] [
@@ -293,7 +325,7 @@ to execute-actions
     ]
     set beliefs []
     set beliefs lput contains beliefs
-    set beliefs lput trash-pos beliefs
+    set beliefs lput trash-poses beliefs
     set beliefs lput to-clean beliefs
   ]
 end
@@ -455,7 +487,7 @@ container-size
 container-size
 0
 100
-50
+10
 1
 1
 NIL
@@ -463,14 +495,29 @@ HORIZONTAL
 
 MONITOR
 14
-377
+416
 778
-422
+461
 Dumped garbage
-[stuff] of garbage 1
+sort [stuff] of garbages
 17
 1
 11
+
+SLIDER
+12
+381
+778
+414
+garbage-amount
+garbage-amount
+0
+10
+10
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
