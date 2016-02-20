@@ -2,6 +2,9 @@
 ; Lecturers: T. Bosse & M.C.A. Klein
 ; Lab assistants: D. Formolo & L. Medeiros
 
+;; Assignment 3.3
+;; Authors: David van Erkelens (10264019> <me@davidvanerkelens.nl>
+;;          Ysbrand Galama (10262067) <y.galama@uva.nl>
 
 ; --- Assignment 3 - Template ---
 ; Please use this template as a basis for the code to generate the behaviour of your smart vacuum cleaner.
@@ -455,7 +458,7 @@ container-size
 container-size
 0
 100
-50
+20
 1
 1
 NIL

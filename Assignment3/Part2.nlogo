@@ -2,6 +2,9 @@
 ; Lecturers: T. Bosse & M.C.A. Klein
 ; Lab assistants: D. Formolo & L. Medeiros
 
+;; Assignment 3.2
+;; Authors: David van Erkelens (10264019> <me@davidvanerkelens.nl>
+;;          Ysbrand Galama (10262067) <y.galama@uva.nl>
 
 ; --- Assignment 3 - Template ---
 ; Please use this template as a basis for the code to generate the behaviour of your smart vacuum cleaner.
@@ -135,6 +138,25 @@ to update-beliefs
    if (intention = "suck") [
      set beliefs but-first beliefs
    ]
+   set beliefs sort-by [
+     sqrt ( ( item 0 ?1 - xcor ) ^ 2 + ( item 1 ?1 - ycor ) ^ 2 ) < sqrt ( ( item 0 ?2 - xcor ) ^ 2 + ( item 1 ?2 - ycor ) ^ 2 )
+   ] beliefs
+;   if (length beliefs > 0) [
+;     let bestpos [0 0]
+;     let bestdist 1000000
+;     foreach beliefs [
+;       let curx item 0 ?
+;       let cury item 1 ?
+;       let curdist sqrt ( ( curx - xcor ) ^ 2 + (cury - ycor) ^ 2 )
+;       if (curdist < bestdist) [
+;         set bestdist curdist
+;         set bestpos ?
+;       ]
+;     ]
+;     set beliefs remove bestpos beliefs
+;     set beliefs fput bestpos beliefs
+;   ]
+
  ]
 end
 
@@ -236,7 +258,7 @@ dirt_pct
 dirt_pct
 0
 100
-3
+53
 1
 1
 NIL
