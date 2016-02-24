@@ -63,8 +63,8 @@ end
 to go
   ; This method executes the main processing cycle of an agent.
   ; For Assignment 4.1, this involves updating desires, beliefs and intentions, and executing actions (and advancing the tick counter).
-  update-desires
   update-beliefs
+  update-desires
   update-intentions
   execute-actions
   tick
@@ -112,6 +112,19 @@ to setup-vacuums
     ]
     set i i + 1
   ]
+  ask vacuums [
+    let tmp []
+    ask vacuums [
+      if (self != myself) [
+        set tmp lput [color] of self tmp
+      ]
+    ]
+    set beliefs []
+    set beliefs lput [] beliefs
+    set beliefs lput color beliefs
+    set beliefs lput tmp beliefs
+    set beliefs lput count patches with [pcolor = [color] of myself] beliefs
+  ]
 end
 
 
@@ -137,6 +150,40 @@ end
 to update-beliefs
  ; You should update your agent's beliefs here.
  ; Please remember that you should use this method whenever your agents changes its position.
+ ask vacuums [
+   let dirty-locations item 0 beliefs
+   let own-color item 1 beliefs
+   let other-colors item 2 beliefs
+   let total-dirt item 3 beliefs
+
+   ask patches in-radius vision_radius [
+     if (pcolor = [color] of myself) [
+       let co []
+       set co lput pxcor co
+       set co lput pycor co
+       let not-in-it true
+       foreach dirty-locations [
+         if (? = co) [
+           set not-in-it false
+         ]
+       ]
+       if (not-in-it) [
+         set dirty-locations lput co dirty-locations
+       ]
+     ]
+   ]
+
+   set dirty-locations sort-by [
+     distancexy item 0 ?1 item 1 ?1 < distancexy item 0 ?2 item 1 ?2
+   ] dirty-locations
+
+   set beliefs []
+   set beliefs lput dirty-locations beliefs
+   set beliefs lput own-color beliefs
+   set beliefs lput other-colors beliefs
+   set beliefs lput total-dirt beliefs
+ ]
+
 end
 
 
@@ -275,7 +322,7 @@ vision_radius
 vision_radius
 0
 100
-11
+3
 1
 1
 NIL
