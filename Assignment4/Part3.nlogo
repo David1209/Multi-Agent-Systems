@@ -1,12 +1,12 @@
-; UvA/VU - Multi-Agent Systems
+; UVA/VU - Multi-Agent Systems
 ; Lecturers: T. Bosse & M.C.A. Klein
 ; Lab assistants: D. Formolo & L. Medeiros
 
-;; Assignment 4.1
+;; Assignment 4.2
 ;; Authors: David van Erkelens (10264019> <me@davidvanerkelens.nl>
 ;;          Ysbrand Galama (10262067) <y.galama@hotmail.com>
 
-; --- Assignment 4.1 - Template ---
+; --- Assignment 4.2 & 4.3 - Template ---
 ; Please use this template as a basis for the code to generate the behaviour of your team of vacuum cleaners.
 ; However, feel free to extend this with any variable or method you think is necessary.
 
@@ -27,9 +27,6 @@
 ;
 ; 1) total_dirty: this variable represents the amount of dirty cells in the environment.
 ; 2) time: the total simulation time.
-;
-; These global variables are added extra
-; 3) colors: The available colors (max 7)
 globals [total_dirty time colors]
 
 
@@ -40,15 +37,17 @@ globals [total_dirty time colors]
 breed [vacuums vacuum]
 breed [radii radius]
 
-
 ; --- Local variables ---
 ; The following local variables are given.
 ;
 ; 1) beliefs: the agent's belief base about locations that contain dirt
 ; 2) desire: the agent's current desire
 ; 3) intention: the agent's current intention
-; 4) own_color: the agtickent's belief about its own target color
-vacuums-own [beliefs desire intention own_color]
+; 4) own_color: the agent's belief about its own target color
+; 5) other_colors: the agent's belief about the target colors of other agents
+; 6) outgoing_messages: list of messages sent by the agent to other agents
+; 7) incoming_messages: list of messages received by the agent from other agents
+vacuums-own [beliefs desire intention outgoing_messages incoming_messages]
 
 
 ; --- Setup ---
@@ -70,6 +69,7 @@ to go
   update-desires
   update-intentions
   execute-actions
+  send-messages
   tick
 end
 
@@ -105,11 +105,10 @@ to setup-vacuums
   [
 
     ask vacuum i [
-      set color item i colors
-      set own_color color
+      set color grey
     ]
     ask radius (i + num_agents) [
-      let c item i colors + 4
+      let c grey
       set color lput 90 extract-rgb c
       setxy [xcor] of vacuum i [ycor] of vacuum i
       create-link-with vacuum i
@@ -117,17 +116,24 @@ to setup-vacuums
     set i i + 1
   ]
   ask vacuums [
-    let tmp []
-    ask vacuums [
-      if (self != myself) [
-        set tmp lput [color] of self tmp
-      ]
+    set outgoing_messages []
+    set incoming_messages []
+
+    let color-space []
+    foreach colors [
+      let q []
+      set q lput ? q
+      set q lput 0 q
+      set color-space lput q color-space
     ]
+
     set beliefs []
+    set beliefs lput color-space beliefs
     set beliefs lput [] beliefs
-    set beliefs lput color beliefs
-    set beliefs lput tmp beliefs
-    set beliefs lput count patches with [pcolor = [color] of myself] beliefs
+    set beliefs lput grey beliefs
+    set beliefs lput colors beliefs
+    set beliefs lput 1 beliefs
+    set beliefs lput [] beliefs
   ]
 end
 
@@ -139,7 +145,13 @@ to setup-ticks
 end
 
 to setup-colors
-  set colors [grey blue pink yellow red green brown]
+  let i 0
+  let all_colors [cyan blue pink yellow red green brown]
+  set colors []
+  while [i < num_agents] [
+    set colors lput item i all_colors colors
+    set i i + 1
+  ]
 end
 
 
@@ -148,15 +160,17 @@ to update-desires
   ; You should update your agent's desires here.
   ; Keep in mind that now you have more than one agent.
   ask vacuums [
-   let dirty-locations item 0 beliefs
-   let own-color item 1 beliefs
-   let other-colors item 2 beliefs
-   let dirt-left item 3 beliefs
+   let own-color item 2 beliefs
+   let dirt-left item 4 beliefs
 
    ifelse (dirt-left <= 0) [
      set desire "stop and rest"
    ] [
-     set desire "clean the dirt"
+     ifelse (not in colors own-color) [
+       set desire "find color"
+     ] [
+       set desire "clean the dirt"
+     ]
    ]
   ]
 end
@@ -167,20 +181,36 @@ to update-beliefs
  ; You should update your agent's beliefs here.
  ; Please remember that you should use this method whenever your agents changes its position.
  ask vacuums [
-   let dirty-locations item 0 beliefs
-   let own-color item 1 beliefs
-   let other-colors item 2 beliefs
-   let dirt-left item 3 beliefs
+   let color-choice item 0 beliefs
+   let dirty-locations item 1 beliefs
+   let own-color item 2 beliefs
+   let other-colors item 3 beliefs
+   let dirt-left item 4 beliefs
+   let other-locations item 5 beliefs
+
+   foreach incoming_messages [
+     ifelse (item 0 ? = "color-set") [
+       set other-colors remove item 1 ? other-colors
+     ] [
+       if (not in dirty-locations ?) [
+         set dirty-locations lput ? dirty-locations
+       ]
+     ]
+   ]
+
+
 
    set dirty-locations sort-by [
      distancexy item 0 ?1 item 1 ?1 < distancexy item 0 ?2 item 1 ?2
    ] dirty-locations
 
    set beliefs []
+   set beliefs lput color-choice beliefs
    set beliefs lput dirty-locations beliefs
    set beliefs lput own-color beliefs
    set beliefs lput other-colors beliefs
    set beliefs lput dirt-left beliefs
+   set beliefs lput other-locations beliefs
  ]
 end
 
@@ -190,8 +220,13 @@ to update-intentions
   ; You should update your agent's intentions here.
   ask vacuums
   [
-    let dirt-left item 3 beliefs
-    let dirty item 0 beliefs
+    let color-choice item 0 beliefs
+    let dirty-locations item 1 beliefs
+    let own-color item 2 beliefs
+    let other-colors item 3 beliefs
+    let dirt-left item 4 beliefs
+    let other-locations item 5 beliefs
+
     ifelse (intention != "look-around") [
       set intention "look-around"
     ] [
@@ -202,12 +237,12 @@ to update-intentions
           set intention "stop"
         ]
         [
-          ifelse (length dirty = 0)
+          ifelse (length dirty-locations = 0)
           [
             set intention "move"
           ]
           [
-            let l item 0 dirty
+            let l item 0 dirty-locations
             let x item 0 l
             let y item 1 l
             ifelse (x = xcor and y = ycor)
@@ -229,9 +264,56 @@ to update-intentions
           ]
         ]
       ] [
-        set intention "stop"
+        ifelse (desire = "find color") [
+          ifelse(length other-colors = 1) [
+            set intention "choose"
+            set own-color item 0 other-colors
+          ] [
+            let found false
+            foreach color-choice [
+              if (not found and item 1 ? >= color-thresh and in other-colors item 0 ?) [
+                set intention "choose"
+                set own-color item 0 ?
+                set found true
+                ask vacuums [
+                  ; because the update in messages comes to late, here is a short-cut to let the other
+                  ;  agents know the choice immediatly
+                  let color-choice2 item 0 beliefs
+                  let dirty-locations2 item 1 beliefs
+                  let own-color2 item 2 beliefs
+                  let other-colors2 item 3 beliefs
+                  let dirt-left2 item 4 beliefs
+                  let other-locations2 item 5 beliefs
+
+                  set other-colors2 remove own-color other-colors2
+
+                  set beliefs []
+                  set beliefs lput color-choice2 beliefs
+                  set beliefs lput dirty-locations2 beliefs
+                  set beliefs lput own-color2 beliefs
+                  set beliefs lput other-colors2 beliefs
+                  set beliefs lput dirt-left2 beliefs
+                  set beliefs lput other-locations2 beliefs
+                ]
+              ]
+            ]
+            if (not found) [
+              set intention "move"
+            ]
+          ]
+        ] [
+         set intention "stop"
+        ]
       ]
-    ]
+   ]
+
+   set beliefs []
+   set beliefs lput color-choice beliefs
+   set beliefs lput dirty-locations beliefs
+   set beliefs lput own-color beliefs
+   set beliefs lput other-colors beliefs
+   set beliefs lput dirt-left beliefs
+   set beliefs lput other-locations beliefs
   ]
 end
 
@@ -241,95 +323,212 @@ to execute-actions
   ; Here you should put the code related to the actions performed by your agent: moving, cleaning, and (actively) looking around.
   ; Please note that your agents should perform only one action per tick!
   ask vacuums [
-    let dirty-locations item 0 beliefs
-    let own-color item 1 beliefs
-    let other-colors item 2 beliefs
-    let dirt-left item 3 beliefs
+    let color-choice item 0 beliefs
+    let dirty-locations item 1 beliefs
+    let own-color item 2 beliefs
+    let other-colors item 3 beliefs
+    let dirt-left item 4 beliefs
+    let other-locations item 5 beliefs
 
     ifelse (intention = "look-around") [
       ask patches in-radius vision_radius [
-        if (pcolor = [color] of myself) [
-          let co []
-          set co lput pxcor co
-          set co lput pycor co
-          let not-in-it true
-          foreach dirty-locations [
-            if (? = co) [
-              set not-in-it false
-            ]
-          ]
-          if (not-in-it) [
-            set dirty-locations lput co dirty-locations
+       ifelse (pcolor = [color] of myself) [
+         let co []
+         set co lput pxcor co
+         set co lput pycor co
+         if (not in dirty-locations co) [
+           set dirty-locations lput co dirty-locations
+         ]
+       ] [
+         if (pcolor != white) [
+           let co []
+           set co lput pxcor co
+           set co lput pycor co
+           set co lput pcolor co
+
+           let not-in-it true
+           foreach other-locations [
+             if (item 0 ? = item 0 co and item 1 ? = item 1 co and item 2 ? = item 2 co) [
+               set not-in-it false
+             ]
+           ]
+
+           if (not-in-it) [
+             set co lput false co
+             set other-locations lput co other-locations
+
+             let new-color-choice []
+             foreach color-choice [
+               let c item 0 ?
+               let i item 1 ?
+               if (c = item 2 co) [
+                 set i i + 1
+               ]
+               let q []
+               set q lput c q
+               set q lput i q
+               set new-color-choice lput q new-color-choice
+             ]
+             set color-choice new-color-choice
+           ]
+         ]
+       ]
+     ]
+   ] [
+      ifelse (intention = "choose") [
+        set color own-color
+        set dirt-left count patches with [pcolor = own-color]
+
+        foreach other-locations [
+          let x item 0 ?
+          let y item 1 ?
+          let c item 2 ?
+          if (c = own-color) [
+            let l []
+            set l lput x l
+            set l lput y l
+            set dirty-locations lput l dirty-locations
+            set other-locations remove ? other-locations
           ]
         ]
-      ]
-    ] [
-      ifelse (intention = "stop")
-      [
-        set heading heading + 5
       ] [
-        ifelse (intention = "move")
+        ifelse (intention = "stop")
         [
-          ifelse random 100 < 20
+          set heading heading + 5
+        ] [
+          ifelse (intention = "move")
           [
-            set heading random 360
-          ]
-          [
-            fd 1
-          ]
-        ]
-        [
-          let l item 0 dirty-locations
-          let x item 0 l
-          let y item 1 l
-          if (intention = "turnto")
-          [
-            facexy x y
-          ]
-          if (intention = "moveto")
-          [
-            ifelse (distancexy x y < 1)
+            ifelse random 100 < 20
             [
-              setxy x y
+              set heading random 360
             ]
             [
               fd 1
             ]
           ]
-          if (intention = "clean")
           [
-            ask patch x y [
-              set pcolor white
+            let l item 0 dirty-locations
+            let x item 0 l
+            let y item 1 l
+            if (intention = "turnto")
+            [
+              facexy x y
             ]
-            set dirty-locations but-first dirty-locations
-            set dirt-left dirt-left - 1
+            if (intention = "moveto")
+            [
+              ifelse (distancexy x y < 1)
+              [
+                setxy x y
+              ]
+              [
+                fd 1
+              ]
+            ]
+            if (intention = "clean")
+            [
+              if ([pcolor] of patch x y = own-color) [
+                ; because of small bug in tick-updates, need to check this again
+                set dirt-left dirt-left - 1
+              ]
+              ask patch x y [
+                set pcolor white
+              ]
+              set dirty-locations but-first dirty-locations
+            ]
           ]
         ]
       ]
     ]
-
     set beliefs []
+    set beliefs lput color-choice beliefs
     set beliefs lput dirty-locations beliefs
     set beliefs lput own-color beliefs
     set beliefs lput other-colors beliefs
     set beliefs lput dirt-left beliefs
+    set beliefs lput other-locations beliefs
 
 
     ask link-neighbors
     [
       setxy [xcor] of myself [ycor] of myself
+      let c [color] of myself
+      set color lput 90 extract-rgb c
     ]
   ]
+end
+
+
+; --- Send messages ---
+to send-messages
+  ; Here should put the code related to sending messages to other agents.
+  ; Note that this could be seen as a special case of executing actions, but for conceptual clarity it has been put in a separate method.
+  ask vacuums [
+   set outgoing_messages []
+   set incoming_messages []
+  ]
+  ask vacuums [
+    let own-color item 2 beliefs
+    let other-colors item 3 beliefs
+    let other-locations item 5 beliefs
+    let new-other-locations []
+    foreach other-locations [
+      let x item 0 ?
+      let y item 1 ?
+      let c item 2 ?
+      let m item 3 ?
+      ifelse (in other-colors c or m) [
+        set new-other-locations lput ? new-other-locations
+      ] [
+        let q []
+        set q lput x q
+        set q lput y q
+        set q lput c q
+        set outgoing_messages lput q outgoing_messages
+        set q lput true q
+        set new-other-locations lput q new-other-locations
+      ]
+    ]
+    set beliefs but-last beliefs
+    set beliefs lput new-other-locations beliefs
+    foreach outgoing_messages [
+      let co but-last ?
+      let c last ?
+      ask vacuums [
+        if ([color] of self = c) [
+          set incoming_messages lput co incoming_messages
+        ]
+      ]
+    ]
+    if (intention = "choose") [
+      let q []
+      set q lput "color-set" q
+      set q lput own-color q
+      set outgoing_messages lput q outgoing_messages
+      ask vacuums [
+        set incoming_messages lput q incoming_messages
+      ]
+    ]
+  ]
+end
+
+to-report in [l i]
+  let ans false
+  foreach l [
+    if (? = i) [
+      set ans true
+    ]
+  ]
+  report ans
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
 786
-17
-1386
-638
+46
+1303
+584
 12
 12
-23.6
+20.31
 1
 10
 1
@@ -350,25 +549,25 @@ ticks
 30.0
 
 SLIDER
-9
-118
-775
-151
+6
+133
+772
+166
 dirt_pct
 dirt_pct
 0
 100
-22
+27
 1
 1
 NIL
 HORIZONTAL
 
 BUTTON
-9
-86
-393
-119
+6
+101
+390
+134
 NIL
 go
 NIL
@@ -382,10 +581,10 @@ NIL
 1
 
 BUTTON
-392
-86
-775
-119
+389
+101
+772
+134
 NIL
 go
 T
@@ -399,10 +598,10 @@ NIL
 1
 
 BUTTON
-9
-229
-775
-262
+6
+243
+772
+276
 NIL
 setup
 NIL
@@ -416,10 +615,10 @@ NIL
 1
 
 SLIDER
-9
-155
-775
-188
+6
+169
+772
+202
 num_agents
 num_agents
 2
@@ -431,25 +630,25 @@ NIL
 HORIZONTAL
 
 SLIDER
-8
-192
-775
-225
+5
+206
+772
+239
 vision_radius
 vision_radius
 0
 100
-5
+4
 1
 1
 NIL
 HORIZONTAL
 
 MONITOR
-9
-349
-775
-394
+457
+276
+773
+321
 Intention of vacuum 1
 [intention] of vacuum 0
 17
@@ -457,10 +656,10 @@ Intention of vacuum 1
 11
 
 MONITOR
-9
-393
-775
-438
+114
+276
+459
+321
 Desire of vacuum 1
 [desire] of vacuum 0
 17
@@ -468,10 +667,10 @@ Desire of vacuum 1
 11
 
 MONITOR
-9
-305
-775
-350
+6
+320
+774
+365
 Beliefs of vacuum 1
 [beliefs] of vacuum 0
 17
@@ -479,10 +678,10 @@ Beliefs of vacuum 1
 11
 
 MONITOR
-10
-497
-776
-542
+5
+465
+772
+510
 Beliefs of vacuum 2
 [beliefs] of vacuum 1
 17
@@ -490,32 +689,32 @@ Beliefs of vacuum 2
 11
 
 MONITOR
-9
-262
-775
-307
+6
+276
+115
+321
 Color of vacuum 1
-[own_color] of vacuum 0
+item 2 [beliefs] of vacuum 0
 17
 1
 11
 
 MONITOR
-10
-453
-776
-498
+5
+421
+115
+466
 Color of vacuum 2
-[own_color] of vacuum 1
+item 2 [beliefs] of vacuum 1
 17
 1
 11
 
 MONITOR
-10
-541
-776
-586
+452
+421
+772
+466
 Intention of vacuum 2
 [intention] of vacuum 1
 17
@@ -523,10 +722,10 @@ Intention of vacuum 2
 11
 
 MONITOR
-10
-585
-776
-630
+115
+421
+452
+466
 Desire of vacuum 2
 [desire] of vacuum 1
 17
@@ -534,21 +733,21 @@ Desire of vacuum 2
 11
 
 MONITOR
-11
-642
-777
-687
+5
+566
+113
+611
 Color of vacuum 3
-[own_color] of vacuum 2
+item 2 [beliefs] of vacuum 2
 17
 1
 11
 
 MONITOR
-11
-686
-777
-731
+5
+610
+772
+655
 Beliefs of vacuum 3
 [beliefs] of vacuum 2
 17
@@ -556,10 +755,10 @@ Beliefs of vacuum 3
 11
 
 MONITOR
-11
-730
-777
-775
+453
+566
+772
+611
 Intention of vacuum 3
 [intention] of vacuum 2
 17
@@ -567,10 +766,10 @@ Intention of vacuum 3
 11
 
 MONITOR
-11
-774
-777
-819
+113
+566
+453
+611
 Desire of vacuum 3
 [desire] of vacuum 2
 17
@@ -578,15 +777,96 @@ Desire of vacuum 3
 11
 
 MONITOR
-9
-18
-775
-63
+6
+364
+385
+409
+Outgoing messages vacuum 1
+sort ([outgoing_messages] of vacuum 0)
+17
+1
+11
+
+MONITOR
+385
+364
+774
+409
+Incoming messages vacuum 1
+[incoming_messages] of vacuum 0
+17
+1
+11
+
+MONITOR
+5
+508
+389
+553
+Outgoing messages vacuum 2
+sort ([outgoing_messages] of vacuum 1)
+17
+1
+11
+
+MONITOR
+388
+508
+772
+553
+Incoming messages vacuum 2
+[incoming_messages] of vacuum 1
+17
+1
+11
+
+MONITOR
+6
+653
+389
+698
+Outgoing messages vacuum 3
+sort ([outgoing_messages] of vacuum 2)
+17
+1
+11
+
+MONITOR
+389
+653
+772
+698
+Incoming messages vacuum 3
+[incoming_messages] of vacuum 2
+17
+1
+11
+
+MONITOR
+7
+47
+771
+92
 Time to complete the task.
 time
 17
 1
 11
+
+SLIDER
+7
+10
+770
+43
+color-thresh
+color-thresh
+0
+100
+9
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
