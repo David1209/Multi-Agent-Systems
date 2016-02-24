@@ -204,23 +204,30 @@ to update-intentions
   ; You should update your agent's intentions here.
   ask vacuums
   [
-    let l item 0 beliefs
-    let x item 0 l
-    let y item 1 l
-    ifelse (x = xcor and y = ycor)
+    let dirty item 0 beliefs
+    ifelse (length dirty = 0)
     [
-      if ([pcolor] of patch x y = color)
-      [
-        set intention "clean"
-      ]
+      set intention "move"
     ]
     [
-      ifelse (heading = (towardsxy x y))
+      let l item 0 dirty
+      let x item 0 l
+      let y item 1 l
+      ifelse (x = xcor and y = ycor)
       [
-        set intention "moveto"
+        if ([pcolor] of patch x y = color)
+        [
+          set intention "clean"
+        ]
       ]
       [
-        set intention "turnto"
+        ifelse (heading = (towardsxy x y))
+        [
+          set intention "moveto"
+        ]
+        [
+          set intention "turnto"
+        ]
       ]
     ]
   ]
@@ -232,26 +239,38 @@ to execute-actions
   ; Here you should put the code related to the actions performed by your agent: moving, cleaning, and (actively) looking around.
   ; Please note that your agents should perform only one action per tick!
   ask vacuums [
-    let l item 0 beliefs
-    let x item 0 l
-    let y item 1 l
-    if (intention = "move")
+    ifelse (intention = "move")
     [
       set heading random 360
       fd 1
     ]
-    if (intention = "turnto")
     [
-      facexy x y
-    ]
-    if (intention = "moveto")
-    [
-      ifelse (distancexy x y < 1)
+      let dirty item 0 beliefs
+      let l item 0 dirty
+      let x item 0 l
+      let y item 1 l
+      if (intention = "turnto")
       [
-        setxy x y
+        facexy x y
       ]
+      if (intention = "moveto")
       [
-        fd 1
+        ifelse (distancexy x y < 1)
+        [
+          setxy x y
+        ]
+        [
+          fd 1
+        ]
+      ]
+      if (intention = "clean")
+      [
+        ask patch x y [
+          set pcolor white
+        ]
+        set dirty but-first dirty
+        set beliefs but-first beliefs
+        set beliefs fput dirty beliefs
       ]
     ]
     ask link-neighbors
@@ -378,7 +397,7 @@ vision_radius
 vision_radius
 0
 100
-3
+15
 1
 1
 NIL
