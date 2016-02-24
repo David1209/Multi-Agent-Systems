@@ -35,6 +35,7 @@ globals [total_dirty time colors]
 ;
 ; 1) vacuums: vacuum cleaner agents.
 breed [vacuums vacuum]
+breed [radia radius]
 
 
 ; --- Local variables ---
@@ -74,7 +75,12 @@ end
 to setup-patches
   ; In this method you may create the environment (patches), using colors to define cells with various types of dirt.
   ask patches [
-   set pcolor (item (random length colors) colors )
+    ifelse random 100 < dirt_pct [
+      set pcolor (item (random num_agents) colors)
+    ]
+    [
+      set pcolor white
+    ]
   ]
 end
 
@@ -82,6 +88,30 @@ end
 ; --- Setup vacuums ---
 to setup-vacuums
   ; In this method you may create the vacuum cleaner agents.
+  create-vacuums num_agents [
+    setxy random-pxcor random-pycor
+    set shape "airplane"
+  ]
+  create-radia num_agents [
+    set shape "circle"
+    set size vision_radius
+  ]
+
+  let i 0
+  while [i < num_agents]
+  [
+
+    ask vacuum i [
+      set color item i colors
+    ]
+    ask radius (i + num_agents) [
+      let c item i colors + 4
+      set color lput 90 extract-rgb c
+      setxy [xcor] of vacuum i [ycor] of vacuum i
+      create-link-with vacuum i
+    ]
+    set i i + 1
+  ]
 end
 
 
@@ -120,6 +150,12 @@ end
 to execute-actions
   ; Here you should put the code related to the actions performed by your agent: moving, cleaning, and (actively) looking around.
   ; Please note that your agents should perform only one action per tick!
+  ask vacuums [
+    fd 1
+    ask link-neighbors [
+      setxy [xcor] of myself [ycor] of myself
+    ]
+  ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -158,7 +194,7 @@ dirt_pct
 dirt_pct
 0
 100
-2
+4
 1
 1
 NIL
@@ -239,7 +275,7 @@ vision_radius
 vision_radius
 0
 100
-4
+11
 1
 1
 NIL
