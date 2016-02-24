@@ -49,6 +49,7 @@ vacuums-own [beliefs desire intention own_color]
 
 ; --- Setup ---
 to setup
+  clear-all
   set time 0
   setup-colors
   setup-patches
