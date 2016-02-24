@@ -2,6 +2,9 @@
 ; Lecturers: T. Bosse & M.C.A. Klein
 ; Lab assistants: D. Formolo & L. Medeiros
 
+;; Assignment 3.extra
+;; Authors: David van Erkelens (10264019> <me@davidvanerkelens.nl>
+;;          Ysbrand Galama (10262067) <y.galama@uva.nl>
 
 ; --- Assignment 3 - Template ---
 ; Please use this template as a basis for the code to generate the behaviour of your smart vacuum cleaner.
@@ -29,6 +32,8 @@ globals [total_dirty time]
 ; 1) vacuums: vacuum cleaner agents.
 breed [vacuums vacuum]
 
+breed [garbages garbage]
+
 
 ; --- Local variables ---
 ; The following local variables are given. (Note: you might need additional local variables (e.g., to keep track of how many pieces of dirt are in the bag in Assignment 3.3). You could represent this as another belief, but it this is inconvenient you may also use another name for it.)
@@ -37,6 +42,7 @@ breed [vacuums vacuum]
 ; 2) desire: the agent's current desire
 ; 3) intention: the agent's current intention
 vacuums-own [beliefs desire intention]
+garbages-own [stuff]
 
 
 ; --- Setup ---
@@ -53,11 +59,12 @@ end
 to go
   ; This method executes the main processing cycle of an agent.
   ; For Assignment 3, this involves updating desires, beliefs and intentions, and executing actions (and advancing the tick counter).
+  update-counters
   update-beliefs
   update-desires
   update-intentions
   execute-actions
-  set total_dirty count patches with [pcolor = grey]
+  set total_dirty count patches with [pcolor = yellow]
   tick
 end
 
@@ -67,10 +74,10 @@ to setup-patches
   ; In this method you may create the environment (patches), using colors to define dirty and cleaned cells.
   ask patches[
     ifelse random 100 < dirt_pct [
-      set pcolor grey
+      set pcolor yellow
     ]
     [
-      set pcolor white
+      set pcolor blue
     ]
   ]
 end
@@ -78,27 +85,66 @@ end
 
 ; --- Setup vacuums ---
 to setup-vacuums
-  ; In this method you may create the vacuum cleaner agents (in this case, there is only 1 vacuum cleaner agent).
-    create-vacuums 1 [
+  ; In this method you may create the vacuum cleaner agents (in this case, there is only 1 vacuum cleaner agent)
+  create-vacuums 1 [
     setxy 0 min-pycor
-    set color black
+    set color red
     set heading 0
-    set shape "airplane"
+    set shape "fish"
     set beliefs []
-
-
+    set beliefs lput 0 beliefs
+    set beliefs lput [] beliefs
+    set beliefs lput [] beliefs
     set intention ""
   ]
-    ask patches [
-      if (pcolor = grey) [
-        let l []
-        set l lput pxcor l
-        set l lput pycor l
-        ask vacuums [
-          set beliefs lput l beliefs
-        ]
+  ask patches [
+    if (pcolor = yellow) [
+      let l []
+      set l lput pxcor l
+      set l lput pycor l
+      ask vacuums [
+        let contains item 0 beliefs
+        let trash-pos item 1 beliefs
+        let to-clean item 2 beliefs
+
+        set to-clean lput l to-clean
+
+        set beliefs []
+        set beliefs lput contains beliefs
+        set beliefs lput trash-pos beliefs
+        set beliefs lput to-clean beliefs
       ]
     ]
+  ]
+
+  create-garbages garbage-amount [
+    setxy random-pxcor random-pycor
+    set color pink
+    set heading 0
+    set shape "house"
+    set stuff 0
+  ]
+  ;ask garbage 2 [
+  ;  setxy 0 max-pycor
+  ;]
+
+  ask garbages [
+    let l []
+    set l lput xcor l
+    set l lput ycor l
+    ask vacuums [
+      let contains item 0 beliefs
+      let trash-poses item 1 beliefs
+      let to-clean item 2 beliefs
+
+      set trash-poses lput l trash-poses
+
+      set beliefs []
+      set beliefs lput contains beliefs
+      set beliefs lput trash-poses beliefs
+      set beliefs lput to-clean beliefs
+    ]
+  ]
 end
 
 
@@ -108,6 +154,12 @@ to setup-ticks
   reset-ticks
 end
 
+to update-counters
+  ask garbages [
+    set label stuff
+    set label-color white
+  ]
+end
 
 ; --- Update desires ---
 to update-desires
@@ -115,11 +167,21 @@ to update-desires
   ; At the beginning your agent should have the desire to clean all the dirt.
   ; If it realises that there is no more dirt, its desire should change to something like 'stop and turn off'.
   ask vacuum 0 [
-    ifelse(length beliefs > 0) [
+    let contains item 0 beliefs
+    let to-clean item 2 beliefs
+    if (contains >= container-size) [
+      set desire "lets-empty"
+      stop
+    ]
+    ifelse(length to-clean > 0) [
       set desire "clean"
     ]
     [
-      set desire "stop"
+      ifelse (contains > 0) [
+        set desire "lets-empty"
+      ] [
+        set desire "stop"
+      ]
     ]
   ]
 end
@@ -131,29 +193,28 @@ to update-beliefs
  ; At the beginning your agent will receive global information about where all the dirty locations are.
  ; This belief set needs to be updated frequently according to the cleaning actions: if you clean dirt, you do not believe anymore there is a dirt at that location.
  ; In Assignment 3.3, your agent also needs to know where is the garbage can.
- ask vacuums [
-   if (intention = "suck") [
-     set beliefs but-first beliefs
-   ]
-   set beliefs sort-by [
-     sqrt ( ( item 0 ?1 - xcor ) ^ 2 + ( item 1 ?1 - ycor ) ^ 2 ) < sqrt ( ( item 0 ?2 - xcor ) ^ 2 + ( item 1 ?2 - ycor ) ^ 2 )
-   ] beliefs
-;   if (length beliefs > 0) [
-;     let bestpos [0 0]
-;     let bestdist 1000000
-;     foreach beliefs [
-;       let curx item 0 ?
-;       let cury item 1 ?
-;       let curdist sqrt ( ( curx - xcor ) ^ 2 + (cury - ycor) ^ 2 )
-;       if (curdist < bestdist) [
-;         set bestdist curdist
-;         set bestpos ?
-;       ]
-;     ]
-;     set beliefs remove bestpos beliefs
-;     set beliefs fput bestpos beliefs
-;   ]
+ ask vacuum 0 [
+   let contains item 0 beliefs
+   let trash-poses item 1 beliefs
+   let to-clean item 2 beliefs
 
+   if (intention = "suck") [
+     set to-clean but-first to-clean
+   ]
+
+   set to-clean sort-by [
+     distancexy item 0 ?1 item 1 ?1 < distancexy item 0 ?2 item 1 ?2
+     ;sqrt ( ( item 0 ?1 - xcor ) ^ 2 + ( item 1 ?1 - ycor ) ^ 2 ) < sqrt ( ( item 0 ?2 - xcor ) ^ 2 + ( item 1 ?2 - ycor ) ^ 2 )
+   ] to-clean
+
+   set trash-poses sort-by [
+     distancexy item 0 ?1 item 1 ?1 < distancexy item 0 ?2 item 1 ?2
+   ] trash-poses
+
+   set beliefs []
+   set beliefs lput contains beliefs
+   set beliefs lput trash-poses beliefs
+   set beliefs lput to-clean beliefs
  ]
 end
 
@@ -162,27 +223,41 @@ end
 to update-intentions
   ; You should update your agent's intentions here.
   ; The agent's intentions should be dependent on its beliefs and desires.
-  ask vacuums [
-    ifelse(desire = "clean") [
-      let l item 0 beliefs
-      let x item 0 l
-      let y item 1 l
+  ask vacuum 0 [
+    ifelse(desire = "lets-empty") [
+      let trash-pos item 0 item 1 beliefs
+      ifelse(xcor = item 0 trash-pos and ycor = item 1 trash-pos) [
+        set intention "empty"
+      ] [
+        ifelse( heading = towardsxy item 0 trash-pos item 1 trash-pos ) [
+          set intention "move-to-trash"
+        ] [
+          set intention "turn-to-trash"
+        ]
+      ]
+    ] [
+     ifelse(desire = "clean") [
+       let to-clean item 2 beliefs
+       let l item 0 to-clean
+       let x item 0 l
+       let y item 1 l
 
-      ifelse(xcor = x and ycor = y) [
-        set intention "suck"
-      ]
-      [
-        let dir towardsxy x y
-        ifelse (heading = dir) [
-          set intention "move"
-        ]
-        [
-          set intention "turn"
-        ]
-      ]
-    ]
-    [
-      set intention "rest"
+       ifelse(xcor = x and ycor = y) [
+         set intention "suck"
+       ]
+       [
+         let dir towardsxy x y
+         ifelse (heading = dir) [
+           set intention "move"
+         ]
+         [
+           set intention "turn"
+         ]
+       ]
+     ]
+     [
+       set intention "rest"
+     ]
     ]
   ]
 end
@@ -193,29 +268,68 @@ to execute-actions
   ; Here you should put the code related to the actions performed by your agent: moving and cleaning (and in Assignment 3.3, throwing away dirt).
   ask vacuum 0 [
     if(intention = "rest") [show "clean!!" stop]
-    let l item 0 beliefs
-    let x item 0 l
-    let y item 1 l
-    if(intention = "suck")
-    [
-      ask patch x y [
-        set pcolor white
+    let to-clean item 2 beliefs
+    let trash-poses item 1 beliefs
+    let trash-pos item 0 trash-poses
+    let contains item 0 beliefs
+
+    ifelse(intention = "empty") [
+      let tempx xcor
+      let tempy ycor
+      ask garbages [
+        if (xcor = tempx and ycor = tempy) [
+          set stuff stuff + contains
+        ]
+      ]
+      set contains 0
+    ] [
+      ifelse(intention = "move-to-trash") [
+        ifelse(distancexy item 0 trash-pos item 1 trash-pos < 1)
+        [
+          setxy item 0 trash-pos item 1 trash-pos
+        ]
+        [
+          fd 1
+        ]
+      ] [
+        ifelse(intention = "turn-to-trash") [
+          facexy item 0 trash-pos item 1 trash-pos
+        ] [
+          let l item 0 to-clean
+          let x item 0 l
+          let y item 1 l
+          ifelse(intention = "suck")
+          [
+            ask patch x y [
+              set pcolor blue
+            ]
+            set contains contains + 1
+          ] [
+            ifelse(intention = "move")
+            [
+              ifelse(distancexy x y < 1)
+              [
+                setxy x y
+              ]
+              [
+                fd 1
+              ]
+            ] [
+              ifelse(intention = "turn")
+              [
+                facexy x y
+              ] [
+                show "Help! I don't know!!!"
+              ]
+            ]
+          ]
+        ]
       ]
     ]
-    if(intention = "move")
-    [
-      ifelse(distancexy x y < 1)
-      [
-        setxy x y
-      ]
-      [
-        fd 1
-      ]
-    ]
-    if(intention = "turn")
-    [
-      facexy x y
-    ]
+    set beliefs []
+    set beliefs lput contains beliefs
+    set beliefs lput trash-poses beliefs
+    set beliefs lput to-clean beliefs
   ]
 end
 @#$#@#$#@
@@ -255,7 +369,7 @@ dirt_pct
 dirt_pct
 0
 100
-53
+25
 1
 1
 NIL
@@ -366,6 +480,47 @@ The agent's current intention.
 17
 1
 11
+
+SLIDER
+12
+340
+777
+373
+container-size
+container-size
+0
+100
+10
+1
+1
+NIL
+HORIZONTAL
+
+MONITOR
+14
+416
+778
+461
+Dumped garbage
+sort [stuff] of garbages
+17
+1
+11
+
+SLIDER
+12
+381
+778
+414
+garbage-amount
+garbage-amount
+0
+10
+3
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?

@@ -2,6 +2,10 @@
 ; Lecturers: T. Bosse & M.C.A. Klein
 ; Lab assistants: D. Formolo & L. Medeiros
 
+;; Assignment 3.1
+;; Authors: David van Erkelens (10264019> <me@davidvanerkelens.nl>
+;;          Ysbrand Galama (10262067) <y.galama@uva.nl>
+
 
 ; --- Assignment 3 - Template ---
 ; Please use this template as a basis for the code to generate the behaviour of your smart vacuum cleaner.
@@ -53,8 +57,8 @@ end
 to go
   ; This method executes the main processing cycle of an agent.
   ; For Assignment 3, this involves updating desires, beliefs and intentions, and executing actions (and advancing the tick counter).
-  update-desires
   update-beliefs
+  update-desires
   update-intentions
   execute-actions
   set total_dirty count patches with [pcolor = grey]
@@ -85,8 +89,20 @@ to setup-vacuums
     set heading 0
     set shape "airplane"
     set beliefs []
+
+
     set intention ""
   ]
+    ask patches [
+      if (pcolor = grey) [
+        let l []
+        set l lput pxcor l
+        set l lput pycor l
+        ask vacuums [
+          set beliefs lput l beliefs
+        ]
+      ]
+    ]
 end
 
 
@@ -119,16 +135,11 @@ to update-beliefs
  ; At the beginning your agent will receive global information about where all the dirty locations are.
  ; This belief set needs to be updated frequently according to the cleaning actions: if you clean dirt, you do not believe anymore there is a dirt at that location.
  ; In Assignment 3.3, your agent also needs to know where is the garbage can.
- ask patches [
-    if (pcolor = grey) [
-      let l []
-      set l lput pxcor l
-      set l lput pycor l
-      ask vacuums [
-        set beliefs lput l beliefs
-      ]
-    ]
-  ]
+ ask vacuums [
+   if (intention = "suck") [
+     set beliefs but-first beliefs
+   ]
+ ]
 end
 
 
@@ -136,11 +147,12 @@ end
 to update-intentions
   ; You should update your agent's intentions here.
   ; The agent's intentions should be dependent on its beliefs and desires.
-  ask vacuum 0 [
-    let l item 0 beliefs
-    let x item 0 l
-    let y item 1 l
+  ask vacuums [
     ifelse(desire = "clean") [
+      let l item 0 beliefs
+      let x item 0 l
+      let y item 1 l
+
       ifelse(xcor = x and ycor = y) [
         set intention "suck"
       ]
@@ -165,6 +177,7 @@ end
 to execute-actions
   ; Here you should put the code related to the actions performed by your agent: moving and cleaning (and in Assignment 3.3, throwing away dirt).
   ask vacuum 0 [
+    if(intention = "rest") [show "clean!!" stop]
     let l item 0 beliefs
     let x item 0 l
     let y item 1 l
@@ -173,7 +186,6 @@ to execute-actions
       ask patch x y [
         set pcolor white
       ]
-      set beliefs but-first beliefs
     ]
     if(intention = "move")
     [
@@ -228,7 +240,7 @@ dirt_pct
 dirt_pct
 0
 100
-6
+3
 1
 1
 NIL
