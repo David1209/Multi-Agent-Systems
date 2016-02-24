@@ -94,7 +94,7 @@ to setup-vacuums
   ]
   create-radia num_agents [
     set shape "circle"
-    set size vision_radius
+    set size 2 * vision_radius
   ]
 
   let i 0
@@ -205,30 +205,37 @@ to update-intentions
   ask vacuums
   [
     let dirt-left item 3 beliefs
-    ifelse (desire = "clean and move")
+    let dirty item 0 beliefs
+    ifelse (desire = "clean the dirt")
     [
       ifelse (dirt-left = 0)
       [
         set intention "stop"
       ]
       [
-        let l item 0 dirt-left
-        let x item 0 l
-        let y item 1 l
-        ifelse (x = xcor and y = ycor)
+        ifelse (length dirty = 0)
         [
-          if ([pcolor] of patch x y = color)
-          [
-            set intention "clean"
-          ]
+          set intention "move"
         ]
         [
-          ifelse (heading = (towardsxy x y))
+          let l item 0 dirty
+          let x item 0 l
+          let y item 1 l
+          ifelse (x = xcor and y = ycor)
           [
-            set intention "moveto"
+            if ([pcolor] of patch x y = color)
+            [
+              set intention "clean"
+            ]
           ]
           [
-            set intention "turnto"
+            ifelse (heading = (towardsxy x y))
+            [
+              set intention "moveto"
+            ]
+            [
+              set intention "turnto"
+            ]
           ]
         ]
       ]
@@ -331,7 +338,7 @@ dirt_pct
 dirt_pct
 0
 100
-2
+1
 1
 1
 NIL
@@ -412,7 +419,7 @@ vision_radius
 vision_radius
 0
 100
-15
+4
 1
 1
 NIL
