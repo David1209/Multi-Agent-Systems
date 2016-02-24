@@ -44,7 +44,7 @@ breed [radia radius]
 ; 1) beliefs: the agent's belief base about locations that contain dirt
 ; 2) desire: the agent's current desire
 ; 3) intention: the agent's current intention
-; 4) own_color: the agent's belief about its own target color
+; 4) own_color: the agtickent's belief about its own target color
 vacuums-own [beliefs desire intention own_color]
 
 
@@ -103,6 +103,7 @@ to setup-vacuums
 
     ask vacuum i [
       set color item i colors
+      set own_color color
     ]
     ask radius (i + num_agents) [
       let c item i colors + 4
@@ -183,13 +184,34 @@ to update-beliefs
    set beliefs lput other-colors beliefs
    set beliefs lput total-dirt beliefs
  ]
-
 end
 
 
 ; --- Update intentions ---
 to update-intentions
   ; You should update your agent's intentions here.
+  ask vacuums
+  [
+    let l item 0 beliefs
+    let x item 0 l
+    let y item 1 l
+    ifelse (x = xcor and y = ycor)
+    [
+      if ([pcolor] of patch x y = color)
+      [
+        set intention "clean"
+      ]
+    ]
+    [
+      ifelse (heading = (towardsxy x y))
+      [
+        set intention "moveto"
+      ]
+      [
+        set intention "turnto"
+      ]
+    ]
+  ]
 end
 
 
@@ -198,8 +220,30 @@ to execute-actions
   ; Here you should put the code related to the actions performed by your agent: moving, cleaning, and (actively) looking around.
   ; Please note that your agents should perform only one action per tick!
   ask vacuums [
-    fd 1
-    ask link-neighbors [
+    let l item 0 beliefs
+    let x item 0 l
+    let y item 1 l
+    if (intention = "move")
+    [
+      set heading random 360
+      fd 1
+    ]
+    if (intention = "turnto")
+    [
+      facexy x y
+    ]
+    if (intention = "moveto")
+    [
+      ifelse (distancexy x y < 1)
+      [
+        setxy x y
+      ]
+      [
+        fd 1
+      ]
+    ]
+    ask link-neighbors
+    [
       setxy [xcor] of myself [ycor] of myself
     ]
   ]
@@ -241,7 +285,7 @@ dirt_pct
 dirt_pct
 0
 100
-4
+21
 1
 1
 NIL
@@ -312,164 +356,6 @@ num_agents
 1
 NIL
 HORIZONTAL
-
-SLIDER
-8
-192
-775
-225
-vision_radius
-vision_radius
-0
-100
-3
-1
-1
-NIL
-HORIZONTAL
-
-MONITOR
-9
-349
-775
-394
-Intention of vacuum 1
-[intention] of vacuum 0
-17
-1
-11
-
-MONITOR
-9
-393
-775
-438
-Desire of vacuum 1
-[desire] of vacuum 0
-17
-1
-11
-
-MONITOR
-9
-305
-775
-350
-Beliefs of vacuum 1
-[beliefs] of vacuum 0
-17
-1
-11
-
-MONITOR
-10
-497
-776
-542
-Beliefs of vacuum 2
-[beliefs] of vacuum 1
-17
-1
-11
-
-MONITOR
-9
-262
-775
-307
-Color of vacuum 1
-[own_color] of vacuum 0
-17
-1
-11
-
-MONITOR
-10
-453
-776
-498
-Color of vacuum 2
-[own_color] of vacuum 1
-17
-1
-11
-
-MONITOR
-10
-541
-776
-586
-Intention of vacuum 2
-[intention] of vacuum 1
-17
-1
-11
-
-MONITOR
-10
-585
-776
-630
-Desire of vacuum 2
-[desire] of vacuum 1
-17
-1
-11
-
-MONITOR
-11
-642
-777
-687
-Color of vacuum 3
-[own_color] of vacuum 2
-17
-1
-11
-
-MONITOR
-11
-686
-777
-731
-Beliefs of vacuum 3
-[beliefs] of vacuum 2
-17
-1
-11
-
-MONITOR
-11
-730
-777
-775
-Intention of vacuum 3
-[intention] of vacuum 2
-17
-1
-11
-
-MONITOR
-11
-774
-777
-819
-Desire of vacuum 3
-[desire] of vacuum 2
-17
-1
-11
-
-MONITOR
-9
-18
-775
-63
-Time to complete the task.
-time
-17
-1
-11
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -787,37 +673,6 @@ Polygon -10899396 true false 132 85 134 64 107 51 108 17 150 2 192 18 192 52 169
 Polygon -10899396 true false 85 204 60 233 54 254 72 266 85 252 107 210
 Polygon -7500403 true true 119 75 179 75 209 101 224 135 220 225 175 261 128 261 81 224 74 135 88 99
 
-ufo top
-false
-0
-Circle -1 true false 15 15 270
-Circle -16777216 false false 15 15 270
-Circle -7500403 true true 75 75 150
-Circle -16777216 false false 75 75 150
-Circle -7500403 true true 60 60 30
-Circle -7500403 true true 135 30 30
-Circle -7500403 true true 210 60 30
-Circle -7500403 true true 240 135 30
-Circle -7500403 true true 210 210 30
-Circle -7500403 true true 135 240 30
-Circle -7500403 true true 60 210 30
-Circle -7500403 true true 30 135 30
-Circle -16777216 false false 30 135 30
-Circle -16777216 false false 60 210 30
-Circle -16777216 false false 135 240 30
-Circle -16777216 false false 210 210 30
-Circle -16777216 false false 240 135 30
-Circle -16777216 false false 210 60 30
-Circle -16777216 false false 135 30 30
-Circle -16777216 false false 60 60 30
-
-vacuum-cleaner
-true
-0
-Polygon -2674135 true false 75 90 105 150 165 150 135 135 105 135 90 90 75 90
-Circle -2674135 true false 105 135 30
-Rectangle -2674135 true false 75 105 90 120
-
 wheel
 false
 0
@@ -861,15 +716,6 @@ true
 0
 Line -7500403 true 150 150 90 180
 Line -7500403 true 150 150 210 180
-
-shape-sensor
-0.0
--0.2 0 0.0 1.0
-0.0 1 1.0 0.0
-0.2 0 0.0 1.0
-link direction
-true
-0
 
 @#$#@#$#@
 0
