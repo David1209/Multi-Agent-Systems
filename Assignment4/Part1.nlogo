@@ -44,7 +44,7 @@ breed [radia radius]
 ; 1) beliefs: the agent's belief base about locations that contain dirt
 ; 2) desire: the agent's current desire
 ; 3) intention: the agent's current intention
-; 4) own_color: the agent's belief about its own target color
+; 4) own_color: the agtickent's belief about its own target color
 vacuums-own [beliefs desire intention own_color]
 
 
@@ -103,6 +103,7 @@ to setup-vacuums
 
     ask vacuum i [
       set color item i colors
+      set own_color color
     ]
     ask radius (i + num_agents) [
       let c item i colors + 4
@@ -137,12 +138,40 @@ end
 to update-beliefs
  ; You should update your agent's beliefs here.
  ; Please remember that you should use this method whenever your agents changes its position.
+ ask vacuums [
+   set beliefs [[0 1]]
+ ]
+ ask patch 0 1 [
+   set pcolor black
+ ]
 end
 
 
 ; --- Update intentions ---
 to update-intentions
   ; You should update your agent's intentions here.
+  ask vacuums
+  [
+    let l item 0 beliefs
+    let x item 0 l
+    let y item 1 l
+    ifelse (x = xcor and y = ycor)
+    [
+      if ([pcolor] of patch x y = color)
+      [
+        set intention "clean"
+      ]
+    ]
+    [
+      ifelse (heading = (towardsxy x y))
+      [
+        set intention "moveto"
+      ]
+      [
+        set intention "turnto"
+      ]
+    ]
+  ]
 end
 
 
@@ -151,8 +180,30 @@ to execute-actions
   ; Here you should put the code related to the actions performed by your agent: moving, cleaning, and (actively) looking around.
   ; Please note that your agents should perform only one action per tick!
   ask vacuums [
-    fd 1
-    ask link-neighbors [
+    let l item 0 beliefs
+    let x item 0 l
+    let y item 1 l
+    if (intention = "move")
+    [
+      set heading random 360
+      fd 1
+    ]
+    if (intention = "turnto")
+    [
+      facexy x y
+    ]
+    if (intention = "moveto")
+    [
+      ifelse (distancexy x y < 1)
+      [
+        setxy x y
+      ]
+      [
+        fd 1
+      ]
+    ]
+    ask link-neighbors
+    [
       setxy [xcor] of myself [ycor] of myself
     ]
   ]
@@ -194,7 +245,7 @@ dirt_pct
 dirt_pct
 0
 100
-4
+21
 1
 1
 NIL
@@ -275,7 +326,7 @@ vision_radius
 vision_radius
 0
 100
-11
+6
 1
 1
 NIL
