@@ -239,14 +239,18 @@ to execute-actions
   ; Here you should put the code related to the actions performed by your agent: moving, cleaning, and (actively) looking around.
   ; Please note that your agents should perform only one action per tick!
   ask vacuums [
+    let dirty-locations item 0 beliefs
+    let own-color item 1 beliefs
+    let other-colors item 2 beliefs
+    let dirt-left item 3 beliefs
+
     ifelse (intention = "move")
     [
       set heading random 360
       fd 1
     ]
     [
-      let dirty item 0 beliefs
-      let l item 0 dirty
+      let l item 0 dirty-locations
       let x item 0 l
       let y item 1 l
       if (intention = "turnto")
@@ -268,15 +272,20 @@ to execute-actions
         ask patch x y [
           set pcolor white
         ]
-        set dirty but-first dirty
-        set beliefs but-first beliefs
-        set beliefs fput dirty beliefs
+        set dirty-locations but-first dirty-locations
+        set dirt-left dirt-left - 1
       ]
     ]
     ask link-neighbors
     [
       setxy [xcor] of myself [ycor] of myself
     ]
+
+    set beliefs []
+    set beliefs lput dirty-locations beliefs
+    set beliefs lput own-color beliefs
+    set beliefs lput other-colors beliefs
+    set beliefs lput dirt-left beliefs
   ]
 end
 @#$#@#$#@
