@@ -782,7 +782,7 @@ MONITOR
 385
 409
 Outgoing messages vacuum 1
-sort ([outgoing_messages] of vacuum 0)
+([outgoing_messages] of vacuum 0)
 17
 1
 11
@@ -804,7 +804,7 @@ MONITOR
 389
 553
 Outgoing messages vacuum 2
-sort ([outgoing_messages] of vacuum 1)
+([outgoing_messages] of vacuum 1)
 17
 1
 11
@@ -826,7 +826,7 @@ MONITOR
 389
 698
 Outgoing messages vacuum 3
-sort ([outgoing_messages] of vacuum 2)
+([outgoing_messages] of vacuum 2)
 17
 1
 11
