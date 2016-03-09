@@ -8,7 +8,7 @@
 
 ; --- Global variables ---
 ; The following global variables are given.
-globals [time score1 score2]
+globals [time score1 score2 drag]
 
 
 ; --- Agents ---
@@ -29,6 +29,7 @@ breed [balls ball]
 ; 7) incoming_messages: list of messages received by the agent from other agents
 players-own [team power beliefs desire intention outgoing_messages incoming_messages]
 radii-own [sensor]
+balls-own [speed]
 
 
 ; --- Setup ---
@@ -56,14 +57,40 @@ to go
   tick
 end
 
-
+to up
+  ask player 1 [
+    set heading 0
+    fd 1
+  ]
+end
+to down
+  ask player 1 [
+    set heading 180
+    fd 1
+  ]
+end
+to lef
+  ask player 1 [
+    set heading 90
+    fd 1
+  ]
+end
+to righ
+  ask player 1 [
+    set heading 270
+    fd 1
+  ]
+end
 ; --- Setup patches ---
 to setup-patches
   ; In this method you may create the environment (patches), using colors to define cells with various types of dirt.
   ask patches[
    ; the walls
    ifelse (pxcor < -50 or pxcor > 50 or pycor < -35 or pycor > 35) [
-     set pcolor grey
+     set pcolor (grey - 1)
+     if (pycor < -35 or pycor > 35) [
+       set pcolor (grey + 1)
+     ]
    ] [
      ; the field
      set pcolor green
@@ -89,6 +116,8 @@ to setup-patches
     set color pink
     set shape "wheel"
   ]
+
+  set drag 0.9
 end
 
 
@@ -204,19 +233,32 @@ to update-game
     ]
 
     ; kick
-    let x xcor
-    let y ycor
-    let z 0
+    set speed speed * drag
     ask players in-radius 1 [
-      set x xcor
-      set y ycor
-      set z -1 * power
+      ask balls [
+        set speed [power] of myself
+        facexy [xcor] of myself [ycor] of myself
+      ]
     ]
-    facexy x y
-    fd z
+    bounce
+    fd (-1 * speed)
   ]
 end
 
+to bounce  ;; turtle procedure
+  ; check: hitting left or right wall?
+  if ( ask patches in-cone speed 1 )
+  if ( [pcolor] of patch-ahead 0.5 = (grey - 1)) [
+    ; if so, reflect heading around x axis
+    set heading (- heading)
+    show heading
+  ]
+  if ( [pcolor] of patch-ahead 0.5 = (grey + 1)) [
+    ; if so, reflect heading around y axis
+    set heading (180 - heading)
+    show heading
+  ]
+end
 
 ; --- Update desires ---
 to update-desires
@@ -238,10 +280,7 @@ end
 
 ; --- Execute actions ---
 to execute-actions
-  ask players [
-    set heading heading + random 30
-    fd 1
-  ]
+
 end
 
 
@@ -283,8 +322,8 @@ GRAPHICS-WINDOW
 52
 -37
 37
-0
-0
+1
+1
 1
 ticks
 30.0
@@ -577,6 +616,74 @@ score2
 17
 1
 11
+
+BUTTON
+435
+345
+498
+378
+NIL
+up
+NIL
+1
+T
+OBSERVER
+NIL
+W
+NIL
+NIL
+1
+
+BUTTON
+430
+380
+493
+413
+NIL
+down
+NIL
+1
+T
+OBSERVER
+NIL
+S
+NIL
+NIL
+1
+
+BUTTON
+500
+380
+563
+413
+NIL
+lef
+NIL
+1
+T
+OBSERVER
+NIL
+D
+NIL
+NIL
+1
+
+BUTTON
+370
+375
+433
+408
+NIL
+righ
+NIL
+1
+T
+OBSERVER
+NIL
+A
+NIL
+NIL
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
