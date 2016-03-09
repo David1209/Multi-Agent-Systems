@@ -1,4 +1,4 @@
-; UVA/VU - Multi-Agent Systems
+; UvA/VU - Multi-Agent Systems
 ; Lecturers: T. Bosse & M.C.A. Klein
 ; Lab assistants: D. Formolo & L. Medeiros
 
@@ -8,9 +8,6 @@
 
 ; --- Global variables ---
 ; The following global variables are given.
-;
-; 1) total_dirty: this variable represents the amount of dirty cells in the environment.
-; 2) time: the total simulation time.
 globals [time score1 score2]
 
 
@@ -350,7 +347,7 @@ num-team2
 num-team2
 1
 10
-10
+2
 1
 1
 NIL
@@ -430,7 +427,7 @@ show-view-team1
 SWITCH
 186
 163
-348
+341
 196
 show-sound-team1
 show-sound-team1
@@ -463,7 +460,7 @@ show-sound-team2
 SWITCH
 187
 92
-344
+342
 125
 has-keeper-team1
 has-keeper-team1
@@ -942,5 +939,5 @@ Line -7500403 true 150 150 90 180
 Line -7500403 true 150 150 210 180
 
 @#$#@#$#@
-0
+1
 @#$#@#$#@

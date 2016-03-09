@@ -2,7 +2,7 @@
 ; Lecturers: T. Bosse & M.C.A. Klein
 ; Lab assistants: D. Formolo & L. Medeiros
 
-;; Assignment 2.1
+;; Assignment 2.2
 ;; Authors: David van Erkelens (10264019> <me@davidvanerkelens.nl>
 ;;          Ysbrand Galama (10262067) <y.galama@uva.nl>
 
@@ -19,9 +19,11 @@
 ; For instance, if dirt_pct = 5, initially 5% of all the patches should contain dirt (and should be cleaned by your smart vacuum cleaner).
 
 
-; --- Global variables ---
-; This template does not contain any global variables, but if you need them you can add them here.
-globals []
+; Global variables are the size of the grid that should be cleaned
+globals [
+  xsize
+  ysize
+]
 
 
 ; --- Setup ---
@@ -35,9 +37,8 @@ end
 
 ; --- Main processing cycle ---
 to go
-  ; if(ticks >= 3)[ stop ]
-  if([xcor] of turtle 0 = 2 and [ycor] of turtle 0 = 2 and not dirt 2 2) [stop]
   ; This method executes the main processing cycle of an agent.
+  if(count patches with [pcolor = grey] = 0 ) [stop]
   ; For Assignment 2, this only involves the execution of actions (and advancing the tick counter).
   execute-actions
   tick
@@ -48,14 +49,22 @@ end
 to setup-patches
   ; In this method you may create the environment (patches), using colors to define dirty and cleaned cells.
   ask patches [
-    ifelse random 100 < dirt_pct [
-      ;; The patch is dirty
-      set pcolor grey
+    ifelse random 100 < obs_pct and (pxcor > 0 or pycor > 0) [
+      ;; The patch is blocked
+      set pcolor black
     ][
       ;; The patch is clean
-      set pcolor white
+      ifelse random 100 < dirt_pct [
+        set pcolor grey
+      ]
+      [
+        set pcolor white
+      ]
     ]
   ]
+  ; Save the maximum coordinates in the global variable
+  set xsize max-pxcor
+  set ysize max-pycor
 end
 
 
@@ -66,6 +75,7 @@ to setup-turtles
     setxy 0 0
     set color black
     set heading 0
+    set shape "airplane"
   ]
 end
 
@@ -81,58 +91,94 @@ to execute-actions
   ; Here you should put the code related to the actions performed by your smart vacuum cleaner: moving and cleaning.
   ; You can separate these actions into two different methods if you want, but these methods should only be called from here
 
-  ; for every position, tell the agent where to move next
-  if(in 0 0 and facing "north" and not dirt 0 0) [do "forward" stop]
-  if(in 0 1 and facing "north" and not dirt 0 1) [do "forward" stop]
-  if(in 0 2 and facing "north" and not dirt 0 2) [do "turn" stop]
-  if(in 0 2 and facing "west" and not dirt 0 2) [do "turn" stop]
-  if(in 0 2 and facing "south" and not dirt 0 2) [do "turn" stop]
-  if(in 0 2 and facing "east") [do "forward" stop]
+  ; Get the location of the turtle
+  let x [xcor] of turtle 0
+  let y [ycor] of turtle 0
+
+  ; Clean if there's dirt
+  if(dirt x y) [suck x y stop]
+  ask patch x y [set pcolor yellow]
 
 
-  if(in 1 2 and facing "north" and not dirt 1 2) [do "turn" stop]
-  if(in 1 2 and facing "west" and not dirt 1 2) [do "turn" stop]
-  if(in 1 2 and facing "east" and not dirt 1 2) [do "turn" stop]
-  if(in 1 2 and facing "south") [do "forward" stop]
+  if (not (doned or blocked) ) [ do "forward" stop]
 
-  if(in 1 1 and facing "south" and not dirt 1 1) [do "forward" stop]
-  if(in 1 1 and facing "south" and not dirt 1 1) [do "forward" stop]
+  let foundx -1
+  let foundy -1
+  let rad 0
+  while [rad < rad-max ] [
+    set rad rad + 1
 
-  if(in 1 0 and facing "north" and not dirt 1 0) [do "turn" stop]
-  if(in 1 0 and facing "west" and not dirt 1 0) [do "turn" stop]
-  if(in 1 0 and facing "south" and not dirt 1 0) [do "turn" stop]
-  if(in 1 0 and facing "east") [do "forward" stop]
+    ask turtle 0 [ ask patches in-radius 1
+      [
+        if((pcolor = grey or pcolor = white)) [
+          set foundx pxcor
+          set foundy pycor
+        ]
+      ]
+    ]
+    if (foundx != -1) [
+      ask turtle 0 [facexy foundx foundy]
+      round-heading
+      print rad
+      stop
+    ]
+  ]
 
-  if(in 2 0 and facing "east" and not dirt 2 0) [do "turn" stop]
-  if(in 2 0 and facing "west" and not dirt 2 0) [do "turn" stop]
-  if(in 2 0 and facing "south" and not dirt 2 0) [do "turn" stop]
-  if(in 2 0 and facing "north") [do "forward" stop]
+  if (not blocked) [ do "forward" stop ]
 
-  if(in 2 1 and facing "north" and not dirt 2 1) [do "forward" stop]
+  set rad 0
+  while [rad < rad-max] [
+    set rad rad + 1
+    if (foundx = -1) [
+      ask turtle 0 [ ask patches in-radius 2
+        [
+          if(pcolor != black and random 100 < 20) [
+            set foundx pxcor
+            set foundy pycor
+          ]
+        ]
+      ]
+    ]
+    if (foundx != -1) [
+      ask turtle 0 [facexy foundx foundy]
+      round-heading
+      print "No"
+      print rad
+      stop
+    ]
+  ]
 
-  ; forall x,y[ if in x,y and dirt in x,y -> clean x,y]
-  if(in 0 0 and dirt 0 0) [suck 0 0 stop]
-  if(in 0 1 and dirt 0 1) [suck 0 1 stop]
-  if(in 0 2 and dirt 0 2) [suck 0 2 stop]
-  if(in 1 0 and dirt 1 0) [suck 1 0 stop]
-  if(in 1 1 and dirt 1 1) [suck 1 1 stop]
-  if(in 1 2 and dirt 1 2) [suck 1 2 stop]
-  if(in 2 0 and dirt 2 0) [suck 2 0 stop]
-  if(in 2 1 and dirt 2 1) [suck 2 1 stop]
-  if(in 2 2 and dirt 2 2) [suck 2 2 stop]
+  ;if(blocked) [random_direction stop]
+  if(random 100 <= 20) [random_direction stop]
+
+   ; If we are at the top of an even row, we have to face east
+  ;if(in x ysize and not dirt x ysize and not facing "east" and x mod 2 = 0) [do "turnright" stop]
+
+  ; If we are at the top of an odd row, we have to face south
+  ;if(in x ysize and not dirt x ysize and not facing "south" and x mod 2 = 1) [do "turnright" stop]
+
+  ; If we are at the bottom of an odd row, we have to face east
+  ;if(in x 0 and not dirt x 0 and not facing "east" and x mod 2 = 1) [do "turnleft" stop]
+
+  ; If we are at the bottom of an even row, we have to face north
+  ;if(in x 0 and not dirt x 0 and not facing "north" and x mod 2 = 0) [do "turnleft" stop]
+
+  ; In all other cases, just move forward
+  ;if(in x y and not dirt x y) [do "forward"]
+  ;ask patch x y [ set pcolor yellow ]
 end
 
-; Procedure to report is a patch is dirty
+; Procedure to report if a patch is dirty
 to-report dirt[x y]
   report ([pcolor] of patch x y = grey)
 end
 
-; Procedure to report if the vaccuum is in x, y
+; Procedure to report if we are in a certain patch
 to-report in[x y]
   report ([xcor] of turtle 0 = x and [ycor] of turtle 0 = y)
 end
 
-; Procedure to report where the turtle is facing
+; Procedure to report if we are facing a certain direction
 to-report facing [n]
   if (n = "east" and [heading] of turtle 0 = 90) [report true]
   if (n = "north" and [heading] of turtle 0 = 0) [report true]
@@ -141,9 +187,14 @@ to-report facing [n]
   report false
 end
 
-; Procedure to let the vaccuum do something
+; Procedure to do a turn or move forward
 to do [act]
-  if (act = "turn") [
+  if (act = "turnleft") [
+    ask turtle 0 [
+      set heading heading - 90
+    ]
+  ]
+  if (act = "turnright") [
     ask turtle 0 [
       set heading heading + 90
     ]
@@ -155,35 +206,79 @@ to do [act]
   ]
 end
 
-; Procedure to clean a dirty patch
+; Procedure to clean a patch
 to suck [x y]
   ask patch x y [
     set pcolor white
   ]
 end
 
+; Procedure to report if the patch ahead is blocked
+to-report blocked
+  let ans true
+  ask turtle 0 [
+    if (patch-ahead 1 != nobody)[
+      set ans ([pcolor] of patch-ahead 1 = black)
+    ]
+  ]
+  report ans
+end
+
+to-report doned
+  let ans false
+  ask turtle 0 [
+    if (patch-ahead 1 != nobody) [
+      set ans ([pcolor] of patch-ahead 1 = yellow)
+    ]
+  ]
+  report ans
+end
+
+to random_direction
+  ifelse random 100 < 50 [
+    do "turnleft"
+  ]
+  [
+    do "turnright"
+  ]
+end
+
+to round-heading
+  ask turtle 0 [
+    if (heading <= 45 or heading > 315) [ set heading 0]
+    if (heading <= 135 and heading > 45) [ set heading 90]
+    if (heading <= 225 and heading > 135) [ set heading 180]
+    if (heading <= 315 and heading > 225) [ set heading 270]
+  ]
+end
+
+
+
+
+
+
 @#$#@#$#@
 GRAPHICS-WINDOW
-210
+292
 10
-455
-221
+1142
+481
 -1
 -1
-60.0
+40.0
 1
 10
 1
 1
 1
 0
-1
-1
+0
+0
 1
 0
-2
+20
 0
-2
+10
 1
 1
 1
@@ -225,10 +320,10 @@ NIL
 0
 
 MONITOR
-7
-103
-177
-148
+5
+140
+175
+185
 dirt
 count patches with [pcolor = grey]
 17
@@ -238,23 +333,101 @@ count patches with [pcolor = grey]
 SLIDER
 7
 60
-179
+177
 93
 dirt_pct
 dirt_pct
 0
 100
-68
+52
+1
+1
+NIL
+HORIZONTAL
+
+BUTTON
+154
+10
+250
+43
+one step
+go
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+0
+
+SLIDER
+5
+100
+177
+133
+obs_pct
+obs_pct
+0
+100
+23
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+35
+265
+207
+298
+rad-max
+rad-max
+0
+30
+30
 1
 1
 NIL
 HORIZONTAL
 
 @#$#@#$#@
-## NetLogo Assignment 2
+## WHAT IS IT?
 
-Now nice of you to take a look at the info tab. This assignment is make by Ysbrand Galama and David van Erkelens.
+(a general understanding of what the model is trying to show or explain)
 
+## HOW IT WORKS
+
+(what rules the agents use to create the overall behavior of the model)
+
+## HOW TO USE IT
+
+(how to use the model, including a description of each of the items in the Interface tab)
+
+## THINGS TO NOTICE
+
+(suggested things for the user to notice while running the model)
+
+## THINGS TO TRY
+
+(suggested things for the user to try to do (move sliders, switches, etc.) with the model)
+
+## EXTENDING THE MODEL
+
+(suggested things to add or change in the Code tab to make the model more complicated, detailed, accurate, etc.)
+
+## NETLOGO FEATURES
+
+(interesting or unusual features of NetLogo that the model uses, particularly in the Code tab; or where workarounds were needed for missing features)
+
+## RELATED MODELS
+
+(models in the NetLogo Models Library and elsewhere which are of related interest)
+
+## CREDITS AND REFERENCES
+
+(a reference to the model's URL on the web if it has one, as well as any other necessary credits, citations, and links)
 @#$#@#$#@
 default
 true
@@ -580,5 +753,5 @@ Line -7500403 true 150 150 90 180
 Line -7500403 true 150 150 210 180
 
 @#$#@#$#@
-0
+1
 @#$#@#$#@

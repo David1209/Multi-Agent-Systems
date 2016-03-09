@@ -122,7 +122,11 @@ to setup-vacuums
   ]
 
   create-garbages 1 [
-      setxy 0 min-pycor
+      setxy 0 min-pycor;if (intention = "move")
+    ;[
+      ;set heading random 360
+    ;  fd 1
+    ;]
       set color pink
       set heading 0
       set shape "house"
