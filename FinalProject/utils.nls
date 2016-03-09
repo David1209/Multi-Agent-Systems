@@ -1,0 +1,23 @@
+to bounce  ;; turtle procedure
+  ; check: hitting left or right wall?
+  if ( [pcolor] of patch-ahead -0.5 = (grey - 1)) [
+    ; if so, reflect heading around x axis
+    set heading (- heading)   ]
+    if ( [pcolor] of patch-ahead -0.5 = (grey + 1)) [
+      ; if so, reflect heading arouny axis
+      set heading (180 - heading)
+ 
+  ]
+end
+
+
+; --- helper functions ---
+to-report in [l i] ; returns true if i in l; false o.w.
+  let ans false
+  foreach l [
+    if (? = i) [
+      set ans true
+    ]
+  ]
+  report ans
+end

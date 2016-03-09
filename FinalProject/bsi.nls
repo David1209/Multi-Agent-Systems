@@ -1,0 +1,28 @@
+; --- Update desires ---
+to update-desires
+
+end
+
+
+; --- Update beliefs ---
+to update-beliefs
+
+end
+
+
+; --- Update intentions ---
+to update-intentions
+
+end
+
+
+; --- Execute actions ---
+to execute-actions
+  
+end
+
+
+; --- Send messages ---
+to send-messages
+
+end

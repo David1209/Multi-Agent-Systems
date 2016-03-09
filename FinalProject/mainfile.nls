@@ -1,0 +1,143 @@
+
+__includes [ "setup.nls" "bsi.nls" "utils.nls"]
+
+; --- Global variables ---
+; The following global variables are given.
+globals [time score1 score2 drag]
+
+
+; --- Agents ---
+; The following types of agent (called 'breeds' in NetLogo) are given.
+;
+; 1) vacuums: vacuum cleaner agents.
+breed [players player]
+breed [radii radius]
+breed [balls ball]
+
+; --- Local variables ---
+; The following local variables are given.
+;
+; 1) beliefs: the agent's belief base about locations that contain dirt
+; 2) desire: the agent's current desire
+; 3) intention: the agent's current intention
+; 6) outgoing_messages: list of messages sent by the agent to other agents
+; 7) incoming_messages: list of messages received by the agent from other agents
+players-own [team power beliefs desire intention outgoing_messages incoming_messages]
+radii-own [sensor]
+balls-own [speed]
+
+
+; --- Setup ---
+to setup
+  clear-all
+  set time 0
+  setup-patches
+  setup-team1
+  setup-team2
+  setup-ticks
+  update-radii
+end
+
+
+; --- Main processing cycle ---
+to go
+  ; This method executes the main processing cycle of an agent.
+  update-beliefs
+  update-desires
+  update-intentions
+  execute-actions
+  send-messages
+  update-radii
+  update-game
+  tick
+end
+
+to up
+  ask player 1 [
+    set heading 0
+    fd 1
+  ]
+end
+to down
+  ask player 1 [
+    set heading 180
+    fd 1
+  ]
+end
+to lef
+  ask player 1 [
+    set heading 90
+    fd 1
+  ]
+end
+to righ
+  ask player 1 [
+    set heading 270
+    fd 1
+  ]
+end
+
+
+to update-radii
+  ask players [
+    ask link-neighbors [
+      let s true
+      let x 0
+      if (sensor = "view") [
+        set x -3
+        if ([team] of myself = 1) [
+          if (show-view-team1) [ set s false ]
+          set size 2 * view-team1
+        ]
+        if ([team] of myself = 2) [
+          if (show-view-team2) [ set s false ]
+          set size 2 * view-team2
+        ]
+      ]
+      if (sensor = "sound") [
+        set x 3
+        if ([team] of myself = 1) [
+          if (show-sound-team1) [ set s false ]
+          set size 2 * sound-team1
+        ]
+        if ([team] of myself = 2) [
+          if (show-sound-team2) [ set s false ]
+          set size 2 * sound-team2
+        ]
+      ]
+      setxy [xcor] of myself [ycor] of myself
+      set color lput 30 extract-rgb ([color] of myself + x)
+      set hidden? s
+    ]
+  ]
+end
+
+to update-game
+  ask balls [
+    ; check goal
+    if (black = [pcolor] of (patch-at 0 0) ) [
+      ifelse (xcor < 0) [
+        set score1 score1 + 1
+      ] [
+        set score2 score2 + 1
+      ]
+      setxy 0 0
+      set speed 0
+    ]
+
+    ; kick
+    set speed speed * drag
+    ask players in-radius 2 [
+      let curx xcor
+      let cury ycor
+      let tpow power
+      ask balls [
+        set speed tpow
+        facexy curx cury
+      ]
+    ]
+    bounce
+    fd (-1 * speed)
+  ]
+end
+

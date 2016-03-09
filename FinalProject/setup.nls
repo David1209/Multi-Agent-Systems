@@ -1,0 +1,104 @@
+; --- Setup patches ---
+to setup-patches
+  ; In this method you may create the environment (patches), using colors to define cells with various types of dirt.
+  ask patches[
+   ; the walls
+   ifelse (pxcor < -50 or pxcor > 50 or pycor < -35 or pycor > 35) [
+     set pcolor (grey - 1)
+     if (pycor < -35 or pycor > 35) [
+       set pcolor (grey + 1)
+     ]
+   ] [
+     ; the field
+     set pcolor green
+     ; the lines
+     let circ pxcor ^ 2 + pycor ^ 2
+     if ((pxcor = -38 or pxcor = 38) and (pycor >= -15 and pycor <= 15)) or
+        ((pxcor < -38 or pxcor > 38) and (pycor = -15 or pycor = 15)) or
+        (circ <= 80 and circ > 60) or
+        (pxcor = 0) [
+       set pcolor white
+     ]
+   ]
+   ; the goals
+   if (pxcor = -51 and pycor > 0 - goalsize-team1 and pycor < goalsize-team1) or
+      (pxcor = 51 and pycor > 0 - goalsize-team2 and pycor < goalsize-team2) [
+     set pcolor black
+   ]
+
+  ]
+
+  create-balls 1 [
+    setxy 0 0
+    set color pink
+    set shape "wheel"
+  ]
+  
+  set drag 0.9
+end
+
+
+; --- Setup players ---
+to setup-team1
+  create-players num-team1 [
+    setxy -1 + (random -45) (random 70) - 35
+    set shape "person"
+    set color red
+    set size 2
+    set team 1
+    set power 1
+    hatch-radii 1 [
+      set shape "circle"
+      set size 2 * view-team1
+      set sensor "view"
+      create-link-with myself
+    ]
+    hatch-radii 1 [
+      set shape "circle"
+      set size 2 * sound-team1
+      set sensor "sound"
+      create-link-with myself
+    ]
+  ]
+  if has-keeper-team1 [
+    ask player 1 [
+      set color yellow
+      setxy -50 0
+    ]
+  ]
+end
+
+to setup-team2
+  create-players num-team2 [
+    setxy 1 + (random 45) (random 70) - 35
+    set shape "person"
+    set color blue
+    set size 2
+    set team 2
+    set power 1
+    hatch-radii 1 [
+      set shape "circle"
+      set size 2 * view-team2
+      set sensor "view"
+      create-link-with myself
+    ]
+    hatch-radii 1 [
+      set shape "circle"
+      set size 2 * sound-team2
+      set sensor "sound"
+      create-link-with myself
+    ]
+  ]
+  if has-keeper-team2 [
+    ask player (3 * num-team1 + 1) [
+      set color cyan
+      setxy 50 0
+    ]
+  ]
+end
+
+
+; --- Setup ticks ---
+to setup-ticks
+  reset-ticks
+end
