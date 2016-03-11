@@ -42,11 +42,13 @@ end
 ; --- Main processing cycle ---
 to go
   ; This method executes the main processing cycle of an agent.
-  update-beliefs
-  update-desires
-  update-intentions
-  execute-actions
-  send-messages
+  ask players [
+    update-beliefs
+    update-desires
+    update-intentions
+    execute-actions
+    send-messages
+  ]
   update-radii
   update-game
   tick
@@ -66,13 +68,13 @@ to down
 end
 to lef
   ask player 1 [
-    set heading 90
+    set heading 270
     fd 1
   ]
 end
 to righ
   ask player 1 [
-    set heading 270
+    set heading 90
     fd 1
   ]
 end

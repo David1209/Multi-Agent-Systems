@@ -1,28 +1,47 @@
-; --- Update desires ---
-to update-desires
-
-end
-
-
 ; --- Update beliefs ---
-to update-beliefs
-
+to update-beliefs ;- player funct
+  ; hear
+  foreach incoming_messages [
+    
+  ]
+  
+  ; look
+  let team-loc []
+  let oppo-loc []
+  ask players in-radius (table:get beliefs "vis-rad") [
+    ifelse ([team] of self = [team] of myself) [
+      set team-loc lput team-loc list xcor ycor
+    ] [
+      set team-loc lput oppo-loc list xcor ycor
+    ]
+  ]
+  table:put beliefs "team-loc" team-loc
+  table:put beliefs "oppo-loc" oppo-loc
+  
 end
 
+; --- Update desires ---
+to update-desires ;- player funct
+  ifelse (table:get beliefs "team-has-ball") [
+      set desire "score"
+  ] [
+    set desire "prevent-score"
+  ]
+end
 
 ; --- Update intentions ---
-to update-intentions
+to update-intentions ;- player funct
 
 end
 
 
 ; --- Execute actions ---
-to execute-actions
+to execute-actions ;- player funct
   
 end
 
 
 ; --- Send messages ---
-to send-messages
+to send-messages ;- player funct
 
 end
