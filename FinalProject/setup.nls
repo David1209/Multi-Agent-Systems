@@ -4,9 +4,9 @@ to setup-patches
   ask patches[
    ; the walls
    ifelse (pxcor < -50 or pxcor > 50 or pycor < -35 or pycor > 35) [
-     set pcolor (grey - 1)
+     set pcolor (grey - 0.1)
      if (pycor < -35 or pycor > 35) [
-       set pcolor (grey + 1)
+       set pcolor (grey + 0.1)
      ]
    ] [
      ; the field

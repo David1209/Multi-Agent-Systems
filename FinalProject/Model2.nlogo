@@ -5,7 +5,19 @@
 ; Authors: David van Erkelens (10264019> <me@davidvanerkelens.nl>
 ;          Ysbrand Galama (10262067) <y.galama@hotmail.com>
 
+extensions [table]
 __includes [ "mainfile.nls" ]
+
+to test
+  let x table:make
+  table:put x 1 2
+  table:put x 2 3
+  show x
+  show table:get x 1
+  table:put x 1 5
+  show x
+
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
 716
@@ -387,6 +399,23 @@ T
 OBSERVER
 NIL
 A
+NIL
+NIL
+1
+
+BUTTON
+440
+295
+503
+328
+NIL
+test
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
 NIL
 NIL
 1
