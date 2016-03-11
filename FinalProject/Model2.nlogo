@@ -40,8 +40,8 @@ GRAPHICS-WINDOW
 52
 -37
 37
-0
-0
+1
+1
 1
 ticks
 30.0
@@ -429,7 +429,7 @@ pln1
 pln1
 1
 num-team1
-7
+1
 1
 1
 NIL
@@ -554,11 +554,33 @@ pln2
 pln2
 1
 num-team2
-10
+1
 1
 1
 NIL
 HORIZONTAL
+
+SWITCH
+180
+195
+312
+228
+private-team1
+private-team1
+1
+1
+-1000
+
+SWITCH
+520
+195
+652
+228
+private-team2
+private-team2
+1
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?

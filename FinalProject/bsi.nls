@@ -1,18 +1,25 @@
 ; --- Update beliefs ---
 to update-beliefs ;- player funct
+  let team-loc []
+  let oppo-loc []
   ; hear
   foreach incoming_messages [
-    
+    if ( (table:get ? "subject") = "teampos") [
+      set team-loc lput team-loc table:get ? "message"
+    ]
+    if ( (table:get ? "subject") = "oppopos") [
+      set team-loc lput team-loc table:get ? "message"
+    ]
   ]
   
   ; look
-  let team-loc []
-  let oppo-loc []
   ask players in-radius (table:get beliefs "vis-rad") [
-    ifelse ([team] of self = [team] of myself) [
-      set team-loc lput team-loc list xcor ycor
-    ] [
-      set team-loc lput oppo-loc list xcor ycor
+    if (self != myself and not (in team-loc list xcor ycor or in oppo-loc list xcor ycor) ) [
+      ifelse ([team] of self = [team] of myself) [
+        set team-loc lput list xcor ycor team-loc
+      ] [
+      set team-loc lput list xcor ycor oppo-loc
+      ]
     ]
   ]
   table:put beliefs "team-loc" team-loc
@@ -43,5 +50,19 @@ end
 
 ; --- Send messages ---
 to send-messages ;- player funct
-
+  set outgoing_messages []
+  foreach table:get beliefs "team-loc" [
+    let message table:make
+    table:put message "to" "mates"
+    table:put message "subject" "teampos"
+    table:put message "message" ?
+    set outgoing_messages lput message outgoing_messages
+  ]
+  foreach table:get beliefs "oppo-loc" [
+    let message table:make
+    table:put message "to" "mates"
+    table:put message "subject" "oppopos"
+    table:put message "message" ?
+    set outgoing_messages lput message outgoing_messages
+  ]
 end

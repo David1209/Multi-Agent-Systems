@@ -13,6 +13,7 @@ globals [time score1 score2 drag]
 breed [players player]
 breed [radii radius]
 breed [balls ball]
+breed [foci focus]
 
 ; --- Local variables ---
 ; The following local variables are given.
@@ -36,6 +37,12 @@ to setup
   setup-team2
   setup-ticks
   update-radii
+  create-foci 2 [
+    setxy 0 0
+    set shape "circle"
+    set size 4
+    set color [255 255 255 50]
+  ]
 end
 
 
@@ -112,6 +119,20 @@ to update-radii
       set hidden? s
     ]
   ]
+  
+  let fi true
+  let num 1
+  ask foci [
+    ifelse (fi) [
+      set fi false
+      set num pln1
+    ] [
+      set num (num-team1 * 3 + pln2)
+    ]
+    set xcor [xcor] of player num
+    set ycor [ycor] of player num
+  ]
+      
 end
 
 to update-game
