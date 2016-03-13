@@ -9,13 +9,17 @@ extensions [table]
 __includes [ "mainfile.nls" ]
 
 to test
-  let x table:make
-  table:put x 1 2
-  table:put x 2 3
-  show x
-  show table:get x 1
-  table:put x 1 5
-  show x
+  ;let x table:make
+  ;table:put x 1 2
+  ;table:put x 2 3
+  ;show x
+  ;show table:get x 1
+  ;table:put x 1 5
+  ;show x
+
+  ask player 1 [
+   shout-message "testmessage"
+  ]
 
 end
 @#$#@#$#@
@@ -177,7 +181,7 @@ SWITCH
 159
 show-view-team1
 show-view-team1
-0
+1
 1
 -1000
 
@@ -188,7 +192,7 @@ SWITCH
 194
 show-sound-team1
 show-sound-team1
-1
+0
 1
 -1000
 

@@ -15,10 +15,10 @@ to update-beliefs ;- player funct
     ]
     
     
-    if table:get ? "sendteam" = team or table:get ? "to" = "opponents"
-    [
+    ;if table:get ? "sendteam" = team xor table:get ? "to" = "opponents"
+    ;[
       ; process the shout
-    ]
+    ;]
   ]
   
   
@@ -83,15 +83,23 @@ end
 
 to shout-message [message] ; - player function
   
-  shout-own-team message
+  let radius sound-team1
+  if team = 2 [ set radius sound-team2 ]
   
-  if team = 1 and not private-team1
+  ask players in-radius radius 
   [
-    shout-other-team message
-  ]
-  if team = 2 and not private-team2
-  [
-    shout-other-team message
+    ifelse team = [team] of myself
+    [
+      ; same team
+      shout-to-player self message
+    ]
+    [
+      ; other team 
+      if ([team] of myself = 1 and not private-team1) or ([team] of myself = 2 and not private-team2)
+      [
+        shout-to-player self message
+      ]
+    ]
   ]
 end
 
@@ -119,4 +127,16 @@ to shout-other-team [message] ; player function
   set outgoing_messages lput msg outgoing_messages
 end
 
+
+to shout-to-player [player message] ;- player function
+  let msg table:make
+  table:put msg "from" myself
+  table:put msg "subject" "shout"
+  table:put msg "message" message
+  set outgoing_messages lput msg outgoing_messages
+  ask player
+  [
+    set incoming_messages lput msg incoming_messages
+  ]
+end
 
