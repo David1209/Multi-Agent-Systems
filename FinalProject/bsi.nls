@@ -3,22 +3,36 @@ to update-beliefs ;- player funct
   let team-loc []
   let oppo-loc []
   ; hear
-  foreach incoming_messages [
-    if ( (table:get ? "subject") = "teampos") [
+  foreach incoming_messages 
+  [
+    if ( (table:get ? "subject") = "teampos") 
+    [
       set team-loc lput team-loc table:get ? "message"
     ]
-    if ( (table:get ? "subject") = "oppopos") [
+    if ( (table:get ? "subject") = "oppopos") 
+    [
       set team-loc lput team-loc table:get ? "message"
+    ]
+    
+    
+    if table:get ? "sendteam" = team or table:get ? "to" = "opponents"
+    [
+      ; process the shout
     ]
   ]
   
+  
   ; look
-  ask players in-radius (table:get beliefs "vis-rad") [
-    if (self != myself and not (in team-loc list xcor ycor or in oppo-loc list xcor ycor) ) [
-      ifelse ([team] of self = [team] of myself) [
+  ask players in-radius (table:get beliefs "vis-rad") 
+  [
+    if (self != myself and not (in team-loc list xcor ycor or in oppo-loc list xcor ycor) ) 
+    [
+      ifelse ([team] of self = [team] of myself) 
+      [
         set team-loc lput list xcor ycor team-loc
-      ] [
-      set team-loc lput list xcor ycor oppo-loc
+      ] 
+      [
+        set team-loc lput list xcor ycor oppo-loc
       ]
     ]
   ]
@@ -66,3 +80,43 @@ to send-messages ;- player funct
     set outgoing_messages lput message outgoing_messages
   ]
 end
+
+to shout-message [message] ; - player function
+  
+  shout-own-team message
+  
+  if team = 1 and not private-team1
+  [
+    shout-other-team message
+  ]
+  if team = 2 and not private-team2
+  [
+    shout-other-team message
+  ]
+end
+
+to shout-own-team [message] ; player function
+  let msg table:make
+  table:put msg "to" "mates"
+  table:put msg "subject" "shout"
+  table:put msg "sendteam" team
+  table:put msg "message" message
+  set outgoing_messages lput msg outgoing_messages
+end
+
+to shout-other-team [message] ; player function
+  let msg table:make
+  table:put msg "to" "opponents"
+  table:put msg "subject" "shout"
+  ifelse team = 1
+  [
+    table:put msg "sendteam" 2
+  ]
+  [
+    table:put msg "sendteam" 1
+  ]
+  table:put msg "message" message
+  set outgoing_messages lput msg outgoing_messages
+end
+
+
