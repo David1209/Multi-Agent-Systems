@@ -48,9 +48,9 @@ to setup-team1
     set team 1
     set power 1
     ifelse (random 100 < playstyle-team1) [
-      setup-beliefs list xcor ycor  view-team1 sound-team1 "off"
+      setup-beliefs list xcor ycor "off"
     ][ 
-      setup-beliefs list xcor ycor  view-team1 sound-team1 "def"
+      setup-beliefs list xcor ycor "def"
     ]
     hatch-radii 1 [
       set shape "circle"
@@ -69,7 +69,7 @@ to setup-team1
     ask player 1 [
       set color yellow
       setxy -50 0
-      setup-beliefs list xcor ycor  view-team1 sound-team1 "keep"
+      setup-beliefs list xcor ycor "keep"
     ]
   ]
 end
@@ -83,9 +83,9 @@ to setup-team2
     set team 2
     set power 1
     ifelse (random 100 < playstyle-team2) [
-      setup-beliefs list xcor ycor  view-team2 sound-team2 "off"
+      setup-beliefs list xcor ycor "off"
     ][ 
-      setup-beliefs list xcor ycor  view-team2 sound-team2 "def"
+      setup-beliefs list xcor ycor "def"
     ]    
     hatch-radii 1 [
       set shape "circle"
@@ -104,7 +104,7 @@ to setup-team2
     ask player (3 * num-team1 + 1) [
       set color cyan
       setxy 50 0
-      setup-beliefs list xcor ycor  view-team2 sound-team2 "keep"
+      setup-beliefs list xcor ycor "keep"
     ]
   ]
 end

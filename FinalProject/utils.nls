@@ -11,7 +11,7 @@ to bounce  ;; turtle procedure
 end
 
 
-to setup-beliefs [pos v-rad h-rad playstyle]  ;-player procedure
+to setup-beliefs [pos playstyle]  ;-player procedure
   set incoming_messages []
   set outgoing_messages []
   
@@ -19,12 +19,11 @@ to setup-beliefs [pos v-rad h-rad playstyle]  ;-player procedure
  
   table:put beliefs "has-ball" false
   table:put beliefs "team-has-ball" false
+  table:put beliefs "ball-loc" []
   table:put beliefs "playstyle" playstyle
   table:put beliefs "own-loc" pos
   table:put beliefs "team-loc" []
   table:put beliefs "oppo-loc" []
-  table:put beliefs "vis-rad" v-rad
-  table:put beliefs "snd-rad" h-rad
 end
 
 ; --- helper functions ---
@@ -36,4 +35,11 @@ to-report in [l i] ; returns true if i in l; false o.w.
     ]
   ]
   report ans
+end
+
+to-report playname [p]
+  let cteam item 0 p
+  let cplay item 1 p
+  ifelse cteam = 1 [ report cplay ]
+    [ report (num-team1 * 3 + cplay) ]
 end
