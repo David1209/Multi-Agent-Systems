@@ -83,7 +83,7 @@ to update-intentions ;- player funct
     if playstyle = "off"
     [
       ; our team has the ball and we want to attack
-      if has-ball
+      ifelse has-ball
       [
         ; move ball to goal, if we are close try to score
         ifelse near-goal other-team
@@ -91,8 +91,18 @@ to update-intentions ;- player funct
           set intention "try-score"
         ]
         [
+          set intention "move-forward-with-ball"
+        ]
+      ]
+      [
+        ifelse near-goal other-team
+        [
+          set intention "support-score"
+        ]
+        [
           set intention "move-forward"
         ]
+        
       ]
     ]
     if playstyle = "def" 
@@ -148,6 +158,54 @@ end
 ; --- Execute actions ---
 to execute-actions ;- player funct
   tell-beliefs
+  if intention = "try-score"
+  [
+    ; kick ball to goal of other team
+  ]
+  if intention = "move-forward-with-ball"
+  [
+    ; move in the direction of the goal of the opponent, with the ball
+  ]
+  if intention = "support-score"
+  [
+    ; attacker is near goal of opponent, ready to attack and we have the ball
+  ]
+  if intention = "move-forward"
+  [
+    ; head toward the goal of the opponent without ball
+  ]
+  if intention = "pass-attacker"
+  [
+    ; pass the ball to a player who can attack
+  ]
+  if intention = "help-keeper"
+  [
+    ; we have the ball, but stay back at our own half in case shit hits the fan
+  ]
+  if intention = "to-own-half"
+  [
+    ; return towards our own half
+  ]
+  if intention = "stay-at-own-goal"
+  [
+    ; exactly what it says and what a keeper should do
+  ]
+  if intention = "move-to-own-goal"
+  [
+    ; move towards our own goal
+  ]
+  if intention = "attack-ball-owner"
+  [
+    ; move towards the opponent that has the ball, and try to take it away from him
+  ]
+  if intention = "between ball-and-goal"
+  [
+    ; position yourself between the ball and the goal
+  ]
+  if intention = "between-ball-and-goal-near-goal"
+  [
+    ; position yourself where the keeper should be
+  ]
 end
 
 
