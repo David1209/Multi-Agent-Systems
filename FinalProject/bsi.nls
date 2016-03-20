@@ -73,6 +73,7 @@ end
 to update-intentions ;- player funct
   let playstyle table:get beliefs "playstyle"
   let has-ball table:get beliefs "has-ball"
+  let ball-loc table:get beliefs "ball-loc"
   let other-team 1
   if team = 1
   [
@@ -139,7 +140,13 @@ to update-intentions ;- player funct
     if playstyle = "off"
     [
       ; the opponents have the ball and im going to attack
-      set intention "attack-ball-owner"
+      ifelse ball-loc = []
+      [
+        set intention "between-ball-and-goal"
+      ]
+      [
+        set intention "attack-ball-owner"
+      ]
     ]
     if playstyle = "def" 
     [
@@ -165,14 +172,55 @@ to execute-actions ;- player funct
   if intention = "move-forward-with-ball"
   [
     ; move in the direction of the goal of the opponent, with the ball
+    if team = 1
+    [
+      let y (random ( 2 * goalsize-team2) - goalsize-team2)
+      facexy 50 y
+    ]
+    if team = 2
+    [
+      let y (random ( 2 * goalsize-team1) - goalsize-team1)
+      facexy -50 y
+    ]
+    fd 1
   ]
   if intention = "support-score"
   [
     ; attacker is near goal of opponent, ready to attack and we have the ball
+    
+    ; for now, randomly move in the area near the goal
+    set heading random 360
+    fd 1
   ]
   if intention = "move-forward"
   [
     ; head toward the goal of the opponent without ball
+    
+    ; move in a random heading in direction towards the goal
+    if team = 1
+    [
+      ifelse ycor > 0
+      [
+        set heading random 90 + 90
+        fd 1
+      ]
+      [
+        set heading random 90
+        fd 1
+      ]
+    ]
+    if team = 2
+    [
+      ifelse ycor > 0
+      [
+        set heading random 90 + 180
+        fd 1
+      ]
+      [
+        set heading random 90 + 270
+        fd 1
+      ]
+    ]
   ]
   if intention = "pass-attacker"
   [
@@ -180,23 +228,90 @@ to execute-actions ;- player funct
   ]
   if intention = "help-keeper"
   [
-    ; we have the ball, but stay back at our own half in case shit hits the fan
+    ; our team has the ball, but stay back at our own half in case shit hits the fan
+    
+    ; we're already at our own half, so move around randomly
+    ; unless we're near the border, then move towards the center
+    ; this could be smarter, haha
+    
+    set heading random 360
+    
+    if ycor > 33
+    [
+      set heading random 180 + 90
+    ]
+    if ycor < -33
+    [
+      set heading random 180 - 90
+    ]
+    fd 1
   ]
   if intention = "to-own-half"
   [
     ; return towards our own half
+    if team = 1
+    [
+      let y (random ( 2 * goalsize-team1) - goalsize-team1)
+      facexy -50 y
+    ]
+    if team = 2
+    [
+      let y (random ( 2 * goalsize-team2) - goalsize-team2)
+      facexy 50 y
+    ]
+    fd 1
   ]
   if intention = "stay-at-own-goal"
   [
     ; exactly what it says and what a keeper should do
+    
+    ; maybe try to stay around the middle?
+    if team = 1
+    [
+      let y (random goalsize-team1) - (goalsize-team1 / 2)
+      facexy -50 y
+    ]
+    
+    if team = 2
+    [
+      let y (random goalsize-team2) - (goalsize-team2 / 2)
+      facexy 50 y
+    ]
+    fd 1
   ]
   if intention = "move-to-own-goal"
   [
     ; move towards our own goal
+    if team = 1
+    [
+      facexy -50 0
+    ]
+    
+    if team = 2
+    [
+      facexy 50 0
+    ]
+    fd 1
   ]
   if intention = "attack-ball-owner"
   [
     ; move towards the opponent that has the ball, and try to take it away from him
+    ; we know the ball location
+    
+    let ball-loc table:get beliefs "ball-loc"
+    ; todo: distance???
+    let bx item 0 ball-loc
+    let by item 1 ball-loc
+    ifelse (distancexy bx by < 2)
+    [
+      ; challenge the fucker to a duel
+    ]
+    [
+      facexy bx by
+      fd 1
+    ]
+    
+    
   ]
   if intention = "between ball-and-goal"
   [
