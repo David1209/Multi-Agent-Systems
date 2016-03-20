@@ -71,7 +71,77 @@ end
 
 ; --- Update intentions ---
 to update-intentions ;- player funct
-
+  let playstyle table:get beliefs "playstyle"
+  let has-ball table:get beliefs "has-ball"
+  let other-team 1
+  if team = 1
+  [
+    set other-team 2
+  ]
+  if desire = "score"
+  [
+    if playstyle = "off"
+    [
+      ; our team has the ball and we want to attack
+      if has-ball
+      [
+        ; move ball to goal, if we are close try to score
+        ifelse near-goal other-team
+        [
+          set intention "try-score"
+        ]
+        [
+          set intention "move-forward"
+        ]
+      ]
+    ]
+    if playstyle = "def" 
+    [
+      ; our team has the ball and we're keeping background
+      ifelse has-ball
+      [
+        set intention "pass-attacker"
+      ]
+      [
+        ifelse on-own-half
+        [
+          set intention "help-keeper"
+        ]
+        [
+          set intention "to-own-half"
+        ]
+      ]
+    ]
+    if playstyle = "keep"
+    [
+      ; our team has the ball and i should be keeping
+      ifelse near-goal team
+      [
+        set intention "stay-at-own-goal"
+      ]
+      [
+        set intention "move-to-own-goal"
+      ]
+    ]
+  ]
+  if desire = "prevent-score"
+  [
+    if playstyle = "off"
+    [
+      ; the opponents have the ball and im going to attack
+      set intention "attack-ball-owner"
+    ]
+    if playstyle = "def" 
+    [
+      ; the opponents have the ball and im going to defend
+      set intention "between-ball-and-goal"
+    ]
+    if playstyle = "keep"
+    [
+      ; holy fuck there're coming for me
+      set intention "between-ball-and-goal-near-goal"
+    ]
+  ]
 end
 
 

@@ -43,3 +43,38 @@ to-report playname [p]
   ifelse cteam = 1 [ report cplay ]
     [ report (num-team1 * 3 + cplay) ]
 end
+
+to-report near-goal [which] ; - player function
+  if which = 1
+  [
+    if ycor >= -15 and ycor <= 15 and xcor <= -38
+    [
+      report true
+    ]
+  ]
+  if which = 2
+  [
+    if ycor >= -15 and ycor <= 15 and xcor >= 38
+    [
+      report true
+    ]
+  ]
+  report false
+end
+
+to-report on-own-half ; - player function
+  ifelse team = 1
+  [
+    if xcor < 0
+    [
+      report true
+    ]
+  ]
+  [
+    if xcor > 0
+    [
+      report true
+    ]
+  ]
+  report false
+end

@@ -123,7 +123,7 @@ view-team1
 view-team1
 1
 100
-22
+14
 1
 1
 NIL
@@ -138,7 +138,7 @@ sound-team1
 sound-team1
 0
 100
-46
+25
 1
 1
 NIL
@@ -192,7 +192,7 @@ SWITCH
 194
 show-sound-team1
 show-sound-team1
-0
+1
 1
 -1000
 
@@ -203,7 +203,7 @@ SWITCH
 158
 show-view-team2
 show-view-team2
-0
+1
 1
 -1000
 
@@ -214,7 +214,7 @@ SWITCH
 193
 show-sound-team2
 show-sound-team2
-0
+1
 1
 -1000
 
@@ -433,7 +433,7 @@ pln1
 pln1
 1
 num-team1
-8
+1
 1
 1
 NIL
@@ -571,7 +571,7 @@ SWITCH
 228
 private-team1
 private-team1
-0
+1
 1
 -1000
 
