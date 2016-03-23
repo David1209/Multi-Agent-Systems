@@ -9,13 +9,24 @@ to update-beliefs ;- player funct
   
   let team-loc table:make
   let oppo-loc table:make
-  let ball-loc []
+  let ball-loc table:get beliefs "ball-loc"
+  let team-has-ball table:get beliefs "team-has-ball"
+  let oppo-has-ball table:get beliefs "oppo-has-ball"
   ; hear
   foreach incoming_messages [
     let mess table:get ? "message"
     ifelse (table:get ? "subject" = "ballpos") [
       set ball-loc mess
-    ][ ifelse (item 0 table:get ? "from" = team) [
+    ][ ifelse (table:get ? "subject" = "ballown") [
+      ifelse(item 0 table:get ? "from" = team) [
+        set team-has-ball item 0 table:get ? "message"
+        set oppo-has-ball item 1 table:get ? "message"
+      ][
+        set team-has-ball item 1 table:get ? "message"
+        set oppo-has-ball item 0 table:get ? "message"
+      ]
+    ][ ;else
+     ifelse (item 0 table:get ? "from" = team) [
       ifelse ( (table:get ? "subject") = "teampos") [
         if (item 0 mess != who and not table:has-key? team-loc (item 0 mess) ) [
           table:put team-loc (item 0 mess) (item 1 mess)
@@ -35,7 +46,7 @@ to update-beliefs ;- player funct
           table:put oppo-loc (item 0 mess) (item 1 mess)
         ]
       ]]
-    ]]
+    ]]]
   ]
   
   
@@ -48,25 +59,44 @@ to update-beliefs ;- player funct
         table:put oppo-loc who list xcor ycor
       ]
     ]
+    if (table:get beliefs "has-ball") [
+      ifelse ([team] of self = [team] of myself) [
+        set team-has-ball true
+        set oppo-has-ball false
+      ][ ;else
+        set team-has-ball false
+        set oppo-has-ball true
+      ]
+    ]
   ]
 
   ask balls in-radius vis-rad [
     set ball-loc list xcor ycor
+    ifelse (distancexy [xcor] of myself [ycor] of myself < 2) [
+      table:put [beliefs] of myself "has-ball" true
+      set team-has-ball true
+    ][
+      table:put [beliefs] of myself "has-ball" false
+    ]
   ]
   
   table:put beliefs "ball-loc" ball-loc
   table:put beliefs "team-loc" team-loc
   table:put beliefs "oppo-loc" oppo-loc
+  table:put beliefs "team-has-ball" team-has-ball
+  table:put beliefs "oppo-has-ball" oppo-has-ball
   
 end
 
 ; --- Update desires ---
 to update-desires ;- player funct
   ifelse (table:get beliefs "team-has-ball") [
-      set desire "score"
-  ] [
+    set desire "score"
+  ][ ifelse (table:get beliefs "oppo-has-ball") [
     set desire "prevent-score"
-  ]
+  ][
+    set desire "find-ball"
+  ]]
 end
 
 ; --- Update intentions ---
@@ -78,6 +108,17 @@ to update-intentions ;- player funct
   if team = 1
   [
     set other-team 2
+  ]
+  if (desire = "find-ball") [
+    ifelse (am-i-closest item 0 ball-loc item 1 ball-loc) [
+      set intention "move-to-ball"
+    ][
+      ifelse (playstyle = "off") [
+        set intention "move-forward"
+      ][
+        set intention "between-ball-and-goal"
+      ]
+    ]
   ]
   if desire = "score"
   [
@@ -140,12 +181,12 @@ to update-intentions ;- player funct
     if playstyle = "off"
     [
       ; the opponents have the ball and im going to attack
-      ifelse ball-loc = []
-      [
-        set intention "between-ball-and-goal"
-      ]
+      ifelse table:get beliefs "oppo-has-ball"
       [
         set intention "attack-ball-owner"
+      ]
+      [
+        set intention "between-ball-and-goal"
       ]
     ]
     if playstyle = "def" 
@@ -165,6 +206,13 @@ end
 ; --- Execute actions ---
 to execute-actions ;- player funct
   tell-beliefs
+  if intention = "move-to-ball" [
+    let ball-loc table:get beliefs "ball-loc"
+    let bx item 0 ball-loc
+    let by item 1 ball-loc
+    facexy bx by
+    fd 1
+  ]
   if intention = "try-score"
   [
     ; kick ball to goal of other team
@@ -340,12 +388,18 @@ to send-messages ;- player funct
           set incoming_messages lput ? incoming_messages
         ]
       ] [ 
-        ask players in-radius rad with [who = item 1 table:get ? "to"] [
+        ask players in-radius rad with [team = item 0 table:get ? "to" and who = item 1 table:get ? "to"] [
             set incoming_messages lput ? incoming_messages
         ]
       ]
     ]
-  ] []
+  ][
+    foreach outgoing_messages [
+      ask players in-radius rad [
+        set incoming_messages lput ? incoming_messages
+      ]
+    ]
+  ]
   
   set outgoing_messages []
 end
@@ -383,6 +437,12 @@ to tell-beliefs
     table:put message "subject" "teampos"
     table:put message "message" list who (list xcor ycor)
     set outgoing_messages lput message outgoing_messages
+   ; ball owner:
+    set message table:make
+    table:put message "from" list team who
+    table:put message "to" list team "mates"
+    table:put message "subject" "ballown"
+    table:put message "message" list table:get beliefs "team-has-ball" table:get beliefs "oppo-has-ball"
 
 end
 

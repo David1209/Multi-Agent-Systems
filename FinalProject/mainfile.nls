@@ -150,7 +150,7 @@ to update-game
 
     ; kick
     set speed speed * drag
-    ask players in-radius 2 [
+    ask players in-radius 1.2 [
       let curx xcor
       let cury ycor
       let tpow power

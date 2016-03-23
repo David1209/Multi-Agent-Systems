@@ -19,7 +19,8 @@ to setup-beliefs [pos playstyle]  ;-player procedure
  
   table:put beliefs "has-ball" false
   table:put beliefs "team-has-ball" false
-  table:put beliefs "ball-loc" []
+  table:put beliefs "oppo-has-ball" false
+  table:put beliefs "ball-loc" [0 0]
   table:put beliefs "playstyle" playstyle
   table:put beliefs "own-loc" pos
   table:put beliefs "team-loc" []
@@ -77,4 +78,14 @@ to-report on-own-half ; - player function
     ]
   ]
   report false
+end
+
+to-report am-i-closest [x y]
+  let self-loc table:get beliefs "own-loc"
+  foreach table:to-list table:get beliefs "team-loc" [
+    if ( sqrt ( (x - item 0 item 1 ?) ^ 2 + (y - item 1 item 1 ?) ^ 2 ) < sqrt ( (x - item 0 self-loc) ^ 2 + (y - item 1 self-loc) ^ 2 ) ) [
+      report false
+    ]
+  ]
+  report true
 end

@@ -123,7 +123,7 @@ view-team1
 view-team1
 1
 100
-14
+16
 1
 1
 NIL
@@ -138,7 +138,7 @@ sound-team1
 sound-team1
 0
 100
-25
+50
 1
 1
 NIL
@@ -153,7 +153,7 @@ view-team2
 view-team2
 0
 100
-6
+16
 1
 1
 NIL
@@ -168,7 +168,7 @@ sound-team2
 sound-team2
 0
 100
-45
+50
 1
 1
 NIL
@@ -249,7 +249,7 @@ playstyle-team1
 playstyle-team1
 0
 100
-52
+50
 1
 1
 NIL
@@ -264,7 +264,7 @@ playstyle-team2
 playstyle-team2
 0
 100
-0
+50
 1
 1
 NIL
@@ -433,7 +433,7 @@ pln1
 pln1
 1
 num-team1
-1
+8
 1
 1
 NIL
@@ -558,7 +558,7 @@ pln2
 pln2
 1
 num-team2
-1
+10
 1
 1
 NIL
@@ -571,7 +571,7 @@ SWITCH
 228
 private-team1
 private-team1
-1
+0
 1
 -1000
 
@@ -582,7 +582,7 @@ SWITCH
 228
 private-team2
 private-team2
-1
+0
 1
 -1000
 
