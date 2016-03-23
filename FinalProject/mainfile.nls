@@ -25,7 +25,7 @@ breed [foci focus]
 ; 7) incoming_messages: list of messages received by the agent from other agents
 players-own [team power beliefs desire intention outgoing_messages incoming_messages]
 radii-own [sensor]
-balls-own [speed]
+balls-own [speed at-foot owner]
 
 
 ; --- Setup ---
@@ -147,18 +147,28 @@ to update-game
       setxy 0 0
       set speed 0
     ]
+    
+    ifelse at-foot = true
+    [
+      set speed 0
+      setxy [xcor] of owner ([ycor] of owner - 1)
+    ]
+    [
+      ; kick
+      set speed speed * drag
+      ask players in-radius 2 [
+        let curx xcor
+        let cury ycor
+        let tpow power
+        ask balls [
+          set speed tpow
+          facexy curx cury
+        ]
 
-    ; kick
-    set speed speed * drag
-    ask players in-radius 1.2 [
-      let curx xcor
-      let cury ycor
-      let tpow power
-      ask balls [
-        set speed tpow
-        facexy curx cury
       ]
     ]
+
+    
     bounce
     fd (-1 * speed)
   ]

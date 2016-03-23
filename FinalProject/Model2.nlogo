@@ -17,8 +17,14 @@ to test
   ;table:put x 1 5
   ;show x
 
-  ask player 1 [
-   shout-message "testmessage"
+  ;ask player 1 [
+  ; shout-message "testmessage"
+  ;]
+
+  ask ball 0
+  [
+    set at-foot true
+    set owner (player 1)
   ]
 
 end

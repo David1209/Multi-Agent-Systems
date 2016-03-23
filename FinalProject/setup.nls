@@ -32,6 +32,8 @@ to setup-patches
     setxy 0 0
     set color pink
     set shape "wheel"
+    set at-foot false
+    set owner -1
   ]
   
   set drag 0.9
