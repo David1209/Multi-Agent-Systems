@@ -89,3 +89,18 @@ to-report am-i-closest [x y]
   ]
   report true
 end
+
+to kick-ball-player [player p-power] ;- ball function
+  facexy [xcor] of player [ycor] of player
+  set heading heading - 180
+  set speed p-power  
+  set at-foot false
+end
+
+
+to kick-ball-xy [x y p-power] ;- ball function
+  facexy x y
+  set heading heading - 180
+  set speed p-power
+  set at-foot false
+end

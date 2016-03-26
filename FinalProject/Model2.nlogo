@@ -50,8 +50,8 @@ GRAPHICS-WINDOW
 52
 -37
 37
-1
-1
+0
+0
 1
 ticks
 30.0
@@ -187,7 +187,7 @@ SWITCH
 159
 show-view-team1
 show-view-team1
-0
+1
 1
 -1000
 
@@ -255,7 +255,7 @@ playstyle-team1
 playstyle-team1
 0
 100
-50
+100
 1
 1
 NIL
@@ -270,7 +270,7 @@ playstyle-team2
 playstyle-team2
 0
 100
-50
+100
 1
 1
 NIL
@@ -439,7 +439,7 @@ pln1
 pln1
 1
 num-team1
-8
+1
 1
 1
 NIL
@@ -564,7 +564,7 @@ pln2
 pln2
 1
 num-team2
-10
+4
 1
 1
 NIL

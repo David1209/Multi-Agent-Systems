@@ -36,7 +36,7 @@ to setup-patches
     set owner -1
   ]
   
-  set drag 0.9
+  set drag 0.95
 end
 
 
@@ -48,7 +48,7 @@ to setup-team1
     set color red
     set size 2
     set team 1
-    set power 1
+    set power 6
     ifelse (random 100 < playstyle-team1) [
       setup-beliefs list xcor ycor "off"
     ][ 
@@ -83,7 +83,7 @@ to setup-team2
     set color blue
     set size 2
     set team 2
-    set power 1
+    set power 6
     ifelse (random 100 < playstyle-team2) [
       setup-beliefs list xcor ycor "off"
     ][ 

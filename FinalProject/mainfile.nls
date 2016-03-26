@@ -137,6 +137,17 @@ end
 
 to update-game
   ask balls [
+    let slowdown true
+    while [slowdown]
+    [
+      set slowdown false
+      ask patches in-radius speed
+      [
+        if pcolor = grey - 0.1 [ set slowdown true ]
+        if pcolor = grey + 0.1 [ set slowdown true ]
+      ]
+      if slowdown [ set speed speed - 0.5 ]
+    ]
     ; check goal
     if (black = [pcolor] of (patch-at 0 0) ) [
       ifelse (xcor < 0) [
@@ -157,14 +168,16 @@ to update-game
       ; kick
       set speed speed * drag
       ask players in-radius 2 [
-        let curx xcor
-        let cury ycor
-        let tpow power
-        ask balls [
-          set speed tpow
-          facexy curx cury
+        ask balls
+        [
+          if owner != myself and speed < 4
+          [
+            set at-foot true
+            set owner myself
+            set speed 0
+          ]
         ]
-
+        
       ]
     ]
 
