@@ -1,6 +1,7 @@
 \documentclass{article}
 \usepackage[utf8]{inputenc}
 \usepackage{marginnote}
+\usepackage{hyperref}
 
 
 \title{Parameters that unballance a simple game of football \\ {\Large Multi-Agent Systems: Final assignment} }
@@ -14,6 +15,7 @@
 \begin{document}
 
 \maketitle
+\tableofcontents
 
 \section{Introduction}
 %overal task
@@ -34,68 +36,77 @@ This model of the game with different settings and strategies gave the next rese
     \item How can this be applied in real life?
 \end{enumerate}
 
-\subsection{Characteristics of the environment and Agents}
+
+\section{Characteristics of the environment and Agents}
+\todo
 These questions will be tried to be answered using a simplified game of football.
 The main reason to simplify the model is because human behaviour is complicated.
 Moreover to simplify the game, several assumptions about the rules are made: the field is lined by a wall, not allowing players or the ball to cross, but bouncing it back.
 When a player tries to intercept the ball, there is a chance this will succeed and rules as `offside' are ignored.
 
+\subsection{BDI model of the agents}
 The task of a team does not change with the real game: winning by scoring more goals than the opponent.
 We incorporated this in the desires of an agent.
-Every agent has one of three desires: {\em score} when the ball is in possesion of the own team, {\em prevent-score} when the opponents have the ball and {\em find-ball} if no agent has the ball.
+Every agent has one of three desires: {\em score} when the ball is in possession of the own team, {\em prevent-score} when the opponents have the ball and {\em find-ball} if no agent has the ball.
 
-These desires are translated into one of thirteen intentions, incorporating beliefs such as the play style and location of the player.
-These intentions are summariesd in \autoref{tab:intentions}, where some intentions can only belong to offending or defending players.
+These desires are translated into one of thirteen intentions, incorporating beliefs such as the play-style and location of the player.
+These intentions are summarised in \autoref{tab:intentions}, where some intentions can only belong to players with a specific play-style.
+
+The perception of an agent happens at every tick, where it will `see', `hear' and talk. The choice is made to not have these as different actions, as humans also appear to be able to perceive and run at the same moment. Both the vision and sound radius can be set differently from the team. A player knows the positions of the players and ball in the view radius.
 
 \begin{table}
-\begin{tabulair}{l p{0.6\textwidth}
-{\em attack-ball-owner} & If a offensive player knows the opponent has the ball, it will try to steal the ball from the other agent. \\
-{\em between-ball-and-goal} & The default intention of a defensive player. \\
+\centering
+\caption{The different intentions a player can have.}
+\label{tab:intentions}
+\begin{tabular}{l p{0.55\textwidth} }
+{\em attack-ball-owner} & If a offencive player knows the opponent has the ball, it will try to steal the ball from the other agent. \\
+{\em between-ball-and-goal} & The default intention of a defencive player. \\
 {\em between-ball-and-goal-near-goal} & The default intention of the keeper. \\
 {\em help-keeper} & When the opponent gets close to the goal of a defending agent, it will try to help the keeper. \\
-{\em move-forward} & The default intention of a offensive player. \\
-{\em move-forward-with-ball} & When an offensive player has th \\
-{\em move-to-ball} & \\
+{\em move-forward} & The default intention of a offencive player. \\
+{\em move-forward-with-ball} & When an offencive player has the ball and is not near the goal, it will move towards it. \\
+{\em move-to-ball} & The player that is closets to the ball when no player has the ball will try to get it.\\
 {\em move-to-own-goal} & The intention of the keeper if it is not near the goal. \\ 
-{\em pass-attacker} & The intention of a defensive player when it has the ball. \\
-{\em support-score} & When an offending team mate has the ball\\
+{\em pass-attacker} & The intention of a defencive player when it has the ball. \\
+{\em support-score} & When an offending team mate has the ball an tries to score, the other offending players will help him. \\
 {\em stay-at-own-goal} & The default intention of a keeper. \\ 
 {\em to-own-half} & When a defending player spawns at the half of the opponent, it will return to it's own half.\\
-{\em try-score} & 
-\end{tabulair}
+{\em try-score} & When an offencive player has the ball and is near the goal, it will try to score.
+\end{tabular}
 \end{table}
 
+\subsection{The environment}
+The ball is an agent that does not follow the ``beliefs'', ``desires'' and ``intentions'' model, but does have some logic of the game within.
+These functions keep track of the ball being in the goal, getting a kick from a player or being toddled by the player.
+Moreover the ball knows when it has to bounce off from the walls around the field.
 
-Resulting in an environment containing the following charesteristics:
-\begin{enumerate}
-    \item A ball, possibly attached to a player agent, moving in the same direction if nothing interacts with the ball;
-    \item Agents from the own team and agents from the opponent;
-    \item Two goals where the teams can score;
-    \item Walls across the borders which can be crossed by the players nor the ball, instead they bounce back.
-\end{enumerate}
+Other than the players, the ball, the goals and the walls, the environment does not have any other properties.
 
-%communication
-\paragraph{Inter-agent communications}
-The types of communication can change the playground of the teams.
-In a real game of football, players cannot communicate only within their team.
-Their `voice' has a certain reach, in which its message can be heard by all players.
-This way, communication about which player will get the ball, can be intercepted by the other team.
-When such a message is intercepted, this can be flooded to the other members of the team in other to intercept the ball and possibly score in the other goal.
+\subsection{Communication}
+Because one of the research questions is about the privacy of communication, several options can be exhausted.
+Besides the radius a player can `shout' to others is variable, making is possible to share it's knowledge with the team-mates, it is also possible to make this communication private from the other team.
+This will show probably how much advantage it has to know the communication of the other team.
 
-Another possibility is that the message is encrypted, making it only meaningful for the members of the own team.
-Besides this, it might also be possible to give players a way of communicating with the whole team, either private or not.
+A message is constructed having several properties.
+The player and team of the sender and receiver are both stored in the message, as is the subject.
+A player will share with the other players the knowledge it has from the position of the other players and the ball position.
+If the communication is public, the other team will perceive this knowledge and uses it to update its own believes.
 
-These different ways of communication could cause different play styles to perform better in the game.
-%resoning process
-\subsection{Reasoning process}
-If a team has the ball, the agents from within this team will try to score the ball.
-The other team however, will try to stop them by intercepting the ball.
-This can be done by intercepting a pass, or by moving to the same location as the agent carrying the ball - then a duel will be held (probably a random chance if the ball will be intercepted).
+%--The sharing of beliefs is hardly necessary when the agents can `see' the whole field.
 
 \section{Experiments}
 
 \section{Results}
 
 \section{Conclusion and Discussion}
+This project tried to answer several questions that different properties 
 
+There are several improvements to the current model, resulting in a more complex, but also more realistic simulation.
+Firstly the play-styles are limited in the current model.
+More properties as egoistic versus team-play could make other tactics emerge. 
+Secondly, in the current model there is no communication between agents before a pass.
+If this is implemented in a future expansion of the model, more tactics can emerge such as overhearing this message as an opponent and adjust its behaviour accordingly.
+This also complicates the communication, making a CNET like method appropriate.
+Moreover the tactics of the players could be extended. The current model seems biased towards offencive play-styles, making a defencive player less useful than in a real game.
+Lastly a model where uncertainty of knowledge about players makes more sense. This way it is also possible to keep the information from older incoming messages.
 \end{document}
