@@ -17,7 +17,12 @@
 
 \section{Introduction}
 %overal task
-Football has been an interesting problem in the AI. There are several teams working on robots that can play against the world champion in 2050 (RoboCup). In this assignment we build a simulation of a football game where the teams play against each other and several choices can be made in their strategies. These differences are both in behaviour of the agents as in their sensor input. Differing these parameters could show how different tactics perform against each other, \todo
+Football has been an interesting problem in the AI.
+There are several teams working on robots that can play against the world champion in 2050 (RoboCup).
+In this assignment we build a simulation of a football game where the teams play against each other and several choices can be made in their strategies.
+These differences are both in behaviour of the agents as in their sensor input.
+Examples are the difference in playing defencive or offencive, difficulty in communication (private versus public, local versus global).
+This makes interesting combinations to test against each other.
 
 %research questions
 This model of the game with different settings and strategies gave the next research questions:
@@ -30,32 +35,38 @@ This model of the game with different settings and strategies gave the next rese
 \end{enumerate}
 
 \subsection{Characteristics of the environment and Agents}
-These questions will be tried to be answered using a simplified game of football. The main reason to simplify the model is because human behaviour is complicated. Moreover to simplify the game, several assumptions about the rules are made: the field is lined by a wall, not allowing players or the ball to cross, but bouncing it back. When a player tries to intercept the ball, there is a chance this will succeed and rules as `offside' are ignored.
+These questions will be tried to be answered using a simplified game of football.
+The main reason to simplify the model is because human behaviour is complicated.
+Moreover to simplify the game, several assumptions about the rules are made: the field is lined by a wall, not allowing players or the ball to cross, but bouncing it back.
+When a player tries to intercept the ball, there is a chance this will succeed and rules as `offside' are ignored.
 
-The task of a team does not change with the real game: winning by scoring more goals than the opponent. We incorporated this in the desires of an agent. Every agent has one of three desires: {\em score} when the ball is in possesion of the own team, {\em prevent-score} when the opponents have the ball and {\em find-ball} if no agent has the ball.
+The task of a team does not change with the real game: winning by scoring more goals than the opponent.
+We incorporated this in the desires of an agent.
+Every agent has one of three desires: {\em score} when the ball is in possesion of the own team, {\em prevent-score} when the opponents have the ball and {\em find-ball} if no agent has the ball.
 
-These desires are translated into one of thirteen intentions, incorporating beliefs such as the play style and location of the player. These intentions are {\em attack-ball-owner}, {\em between-ball-and-goal}, {\em between-ball-and-goal-near-goal}, {\em help-keeper}, {\em move-forward}, {\em move-forward-with-ball}, {\em move-to-ball}, {\em move-to-own-goal}, {\em pass-attacker}, {\em support-score}, {\em stay-at-own-goal}, {\em to-own-half} and {\em try-score}. Where some intentions can only belong to offending or defending players.
+These desires are translated into one of thirteen intentions, incorporating beliefs such as the play style and location of the player.
+These intentions are summariesd in \autoref{tab:intentions}, where some intentions can only belong to offending or defending players.
+
+\begin{table}
+\begin{tabulair}{l p{0.6\textwidth}
+{\em attack-ball-owner} & If a offensive player knows the opponent has the ball, it will try to steal the ball from the other agent. \\
+{\em between-ball-and-goal} & The default intention of a defensive player. \\
+{\em between-ball-and-goal-near-goal} & The default intention of the keeper. \\
+{\em help-keeper} & When the opponent gets close to the goal of a defending agent, it will try to help the keeper. \\
+{\em move-forward} & The default intention of a offensive player. \\
+{\em move-forward-with-ball} & When an offensive player has th \\
+{\em move-to-ball} & \\
+{\em move-to-own-goal} & The intention of the keeper if it is not near the goal. \\ 
+{\em pass-attacker} & The intention of a defensive player when it has the ball. \\
+{\em support-score} & When an offending team mate has the ball\\
+{\em stay-at-own-goal} & The default intention of a keeper. \\ 
+{\em to-own-half} & When a defending player spawns at the half of the opponent, it will return to it's own half.\\
+{\em try-score} & 
+\end{tabulair}
+\end{table}
 
 
-The different behaviours the agents have 
-
-Examples are the difference in playing defencive or offencive, difficulty in communication (private versus public, local versus global). This makes interesting combinations to test against each other.
-
-
-
-The simulation is be a simplified version of a real game of football. Mainly because simulation of human behaviour is complicated. The task of a team is winning the game, i.e.~scoring more than the opponent. 
-
-
-Because there are three states the ball can have with respect to the players, namely held by team 1, held by team 2 and free from both, these states are translated into three desires. These desires, with the beliefs of the agent about the current game state translate into one of thirteen intentions, 
-
-The task of a team is winning the game, i.e.~scoring more than the opponent. Possible desires can be getting the ball if the other team has it, and scoring if the own team has the ball. This can translate into intentions such as trying to score, giving the ball to other players so they can score, or when the other team has the ball, blocking their passes, trying to intercept the ball, etc.
-
-
-
-%charasteristics environment
-\paragraph{Caracteristics of the environment}
-
- Resulting in an environment containing the following charesteristics:
+Resulting in an environment containing the following charesteristics:
 \begin{enumerate}
     \item A ball, possibly attached to a player agent, moving in the same direction if nothing interacts with the ball;
     \item Agents from the own team and agents from the opponent;
@@ -65,14 +76,21 @@ The task of a team is winning the game, i.e.~scoring more than the opponent. Pos
 
 %communication
 \paragraph{Inter-agent communications}
-The types of communication can change the playground of the teams. In a real game of football, players cannot communicate only within their team. Their `voice' has a certain reach, in which its message can be heard by all players. This way, communication about which player will get the ball, can be intercepted by the other team. When such a message is intercepted, this can be flooded to the other members of the team in other to intercept the ball and possibly score in the other goal.
+The types of communication can change the playground of the teams.
+In a real game of football, players cannot communicate only within their team.
+Their `voice' has a certain reach, in which its message can be heard by all players.
+This way, communication about which player will get the ball, can be intercepted by the other team.
+When such a message is intercepted, this can be flooded to the other members of the team in other to intercept the ball and possibly score in the other goal.
 
-Another possibility is that the message is encrypted, making it only meaningful for the members of the own team. Besides this, it might also be possible to give players a way of communicating with the whole team, either private or not.
+Another possibility is that the message is encrypted, making it only meaningful for the members of the own team.
+Besides this, it might also be possible to give players a way of communicating with the whole team, either private or not.
 
 These different ways of communication could cause different play styles to perform better in the game.
 %resoning process
 \subsection{Reasoning process}
-If a team has the ball, the agents from within this team will try to score the ball. The other team however, will try to stop them by intercepting the ball. This can be done by intercepting a pass, or by moving to the same location as the agent carrying the ball - then a duel will be held (probably a random chance if the ball will be intercepted).
+If a team has the ball, the agents from within this team will try to score the ball.
+The other team however, will try to stop them by intercepting the ball.
+This can be done by intercepting a pass, or by moving to the same location as the agent carrying the ball - then a duel will be held (probably a random chance if the ball will be intercepted).
 
 \section{Experiments}
 
