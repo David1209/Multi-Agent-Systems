@@ -50,8 +50,8 @@ GRAPHICS-WINDOW
 52
 -37
 37
-0
-0
+1
+1
 1
 ticks
 30.0
@@ -114,7 +114,7 @@ num-team2
 num-team2
 1
 10
-10
+5
 1
 1
 NIL
@@ -129,7 +129,7 @@ view-team1
 view-team1
 1
 100
-16
+100
 1
 1
 NIL
@@ -144,7 +144,7 @@ sound-team1
 sound-team1
 0
 100
-50
+100
 1
 1
 NIL
@@ -159,7 +159,7 @@ view-team2
 view-team2
 0
 100
-16
+100
 1
 1
 NIL
@@ -174,7 +174,7 @@ sound-team2
 sound-team2
 0
 100
-50
+100
 1
 1
 NIL
@@ -270,7 +270,7 @@ playstyle-team2
 playstyle-team2
 0
 100
-100
+0
 1
 1
 NIL
@@ -439,7 +439,7 @@ pln1
 pln1
 1
 num-team1
-1
+7
 1
 1
 NIL
@@ -564,7 +564,7 @@ pln2
 pln2
 1
 num-team2
-4
+1
 1
 1
 NIL

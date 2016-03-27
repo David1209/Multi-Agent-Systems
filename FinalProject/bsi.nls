@@ -69,6 +69,7 @@ to update-beliefs ;- player funct
       ]
     ]
   ]
+  
 
   ask balls in-radius vis-rad [
     set ball-loc list xcor ycor
@@ -227,6 +228,7 @@ to execute-actions ;- player funct
       [
         kick-ball-xy 50 y [power] of myself
       ]
+      lose-ball
     ]
     [
       let y (random ( 2 * goalsize-team1) - goalsize-team1)
@@ -234,7 +236,9 @@ to execute-actions ;- player funct
       [
         kick-ball-xy -50 y [power] of myself
       ]
+      lose-ball
     ]
+
   ]
   if intention = "move-forward-with-ball"
   [
@@ -303,6 +307,7 @@ to execute-actions ;- player funct
           [
             kick-ball-player myself [power] of myself
           ]
+          lose-ball
         ]
       ]
     ]
@@ -478,11 +483,11 @@ to tell-beliefs
     table:put message "message" list who (list xcor ycor)
     set outgoing_messages lput message outgoing_messages
    ; ball owner:
-    set message table:make
-    table:put message "from" list team who
-    table:put message "to" list team "mates"
-    table:put message "subject" "ballown"
-    table:put message "message" list table:get beliefs "team-has-ball" table:get beliefs "oppo-has-ball"
+   ; set message table:make
+   ; table:put message "from" list team who
+   ; table:put message "to" list team "mates"
+   ; table:put message "subject" "ballown"
+   ; table:put message "message" list table:get beliefs "team-has-ball" table:get beliefs "oppo-has-ball"
 
 end
 

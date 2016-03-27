@@ -141,7 +141,7 @@ to update-game
     while [slowdown]
     [
       set slowdown false
-      ask patches in-radius speed
+      ask patches in-radius abs speed
       [
         if pcolor = grey - 0.1 [ set slowdown true ]
         if pcolor = grey + 0.1 [ set slowdown true ]
@@ -149,7 +149,7 @@ to update-game
       if slowdown [ set speed speed - 0.5 ]
     ]
     ; check goal
-    if (black = [pcolor] of (patch-at 0 0) ) [
+    if (in [pcolor] of patches in-radius 1 black ) [
       ifelse (xcor < 0) [
         set score1 score1 + 1
       ] [

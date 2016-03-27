@@ -80,7 +80,7 @@ to-report on-own-half ; - player function
   report false
 end
 
-to-report am-i-closest [x y]
+to-report am-i-closest [x y] ;- player function
   let self-loc table:get beliefs "own-loc"
   foreach table:to-list table:get beliefs "team-loc" [
     if ( sqrt ( (x - item 0 item 1 ?) ^ 2 + (y - item 1 item 1 ?) ^ 2 ) < sqrt ( (x - item 0 self-loc) ^ 2 + (y - item 1 self-loc) ^ 2 ) ) [
@@ -103,4 +103,15 @@ to kick-ball-xy [x y p-power] ;- ball function
   set heading heading - 180
   set speed p-power
   set at-foot false
+end
+
+to lose-ball ;- player function
+  table:put beliefs "has-ball" false
+  table:put beliefs "team-has-ball" false
+  let message table:make
+  table:put message "from" list team who
+  table:put message "to" list team "mates"
+  table:put message "subject" "ballown"
+  table:put message "message" list table:get beliefs "team-has-ball" table:get beliefs "oppo-has-ball"
+  set outgoing_messages lput message outgoing_messages
 end
