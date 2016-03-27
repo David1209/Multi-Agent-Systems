@@ -46,7 +46,7 @@ to update-beliefs ;- player funct
       ]]
     ]]]
   ]
-  
+  set incoming_messages []
   
   ; look
   ask players in-radius vis-rad [

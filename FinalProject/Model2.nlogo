@@ -114,7 +114,7 @@ num-team2
 num-team2
 1
 10
-9
+5
 1
 1
 NIL
@@ -242,7 +242,7 @@ SWITCH
 124
 has-keeper-team2
 has-keeper-team2
-0
+1
 1
 -1000
 
@@ -270,7 +270,7 @@ playstyle-team2
 playstyle-team2
 0
 100
-50
+100
 1
 1
 NIL
