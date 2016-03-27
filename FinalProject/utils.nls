@@ -1,13 +1,12 @@
-to bounce  ;; turtle procedure
+to bounce  ;- ball procedure
   ; check: hitting left or right wall?
-  if ( [pcolor] of patch-ahead -0.5 = (grey - 0.1) ) [
+  ifelse ( [pcolor] of patch-ahead -0.5 = (grey - 0.1) ) [
     ; if so, reflect heading around x axis
     set heading (- heading)   
-  ]
-  if ( [pcolor] of patch-ahead -0.5 = (grey + 0.1) ) [
+  ][ if ( [pcolor] of patch-ahead -0.5 = (grey + 0.1) ) [
     ; if so, reflect heading arouny axis
     set heading (180 - heading)
-  ]
+  ]]
 end
 
 
@@ -27,7 +26,6 @@ to setup-beliefs [pos playstyle]  ;-player procedure
   table:put beliefs "oppo-loc" []
 end
 
-; --- helper functions ---
 to-report in [l i] ; returns true if i in l; false o.w.
   let ans false
   foreach l [
@@ -41,39 +39,33 @@ end
 to-report playname [p]
   let cteam item 0 p
   let cplay item 1 p
-  ifelse cteam = 1 [ report cplay ]
-    [ report (num-team1 * 3 + cplay) ]
+  ifelse (cteam = 1) [ 
+    report cplay 
+  ][ ;else
+    report (num-team1 * 3 + cplay) 
+  ]
 end
 
-to-report near-goal [which] ; - player function
-  if which = 1
-  [
-    if ycor >= -15 and ycor <= 15 and xcor <= -38
-    [
+to-report near-goal [which] ;- player function
+  ifelse (which = 1) [
+    if (ycor >= -15 and ycor <= 15 and xcor <= -38) [
       report true
     ]
-  ]
-  if which = 2
-  [
-    if ycor >= -15 and ycor <= 15 and xcor >= 38
-    [
+  ][ if (which = 2) [
+    if (ycor >= -15 and ycor <= 15 and xcor >= 38) [
       report true
     ]
-  ]
+  ]]
   report false
 end
 
 to-report on-own-half ; - player function
-  ifelse team = 1
-  [
-    if xcor < 0
-    [
+  ifelse (team = 1) [
+    if (xcor < 0) [
       report true
     ]
-  ]
-  [
-    if xcor > 0
-    [
+  ][ ;else
+    if (xcor > 0) [
       report true
     ]
   ]

@@ -255,7 +255,7 @@ playstyle-team1
 playstyle-team1
 0
 100
-100
+50
 1
 1
 NIL
@@ -270,7 +270,7 @@ playstyle-team2
 playstyle-team2
 0
 100
-0
+50
 1
 1
 NIL
@@ -285,7 +285,7 @@ goalsize-team1
 goalsize-team1
 3
 35
-5
+35
 1
 1
 NIL
@@ -439,7 +439,7 @@ pln1
 pln1
 1
 num-team1
-7
+5
 1
 1
 NIL

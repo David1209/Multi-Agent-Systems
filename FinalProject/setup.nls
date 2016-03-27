@@ -8,7 +8,7 @@ to setup-patches
      if (pycor < -35 or pycor > 35) [
        set pcolor (grey + 0.1)
      ]
-   ] [
+   ][ ;else
      ; the field
      set pcolor green
      ; the lines
@@ -25,7 +25,6 @@ to setup-patches
       (pxcor = 51 and pycor > 0 - goalsize-team2 and pycor < goalsize-team2) [
      set pcolor black
    ]
-
   ]
 
   create-balls 1 [
@@ -51,7 +50,7 @@ to setup-team1
     set power 6
     ifelse (random 100 < playstyle-team1) [
       setup-beliefs list xcor ycor "off"
-    ][ 
+    ][ ;else
       setup-beliefs list xcor ycor "def"
     ]
     hatch-radii 1 [
@@ -86,7 +85,7 @@ to setup-team2
     set power 6
     ifelse (random 100 < playstyle-team2) [
       setup-beliefs list xcor ycor "off"
-    ][ 
+    ][ ;else
       setup-beliefs list xcor ycor "def"
     ]    
     hatch-radii 1 [

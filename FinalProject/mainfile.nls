@@ -92,18 +92,16 @@ to update-radii
     ask link-neighbors [
       let s true
       let x 0
-      if (sensor = "view") [
+      ifelse (sensor = "view") [
         set x -3
-        if ([team] of myself = 1) [
+        ifelse ([team] of myself = 1) [
           if (show-view-team1) [ set s false ]
           set size 2 * view-team1
-        ]
-        if ([team] of myself = 2) [
+        ][ if ([team] of myself = 2) [
           if (show-view-team2) [ set s false ]
           set size 2 * view-team2
-        ]
-      ]
-      if (sensor = "sound") [
+        ]]
+      ][ if (sensor = "sound") [
         set x 3
         if ([team] of myself = 1) [
           if (show-sound-team1) [ set s false ]
@@ -113,7 +111,7 @@ to update-radii
           if (show-sound-team2) [ set s false ]
           set size 2 * sound-team2
         ]
-      ]
+      ]]
       setxy [xcor] of myself [ycor] of myself
       set color lput 30 extract-rgb ([color] of myself + x)
       set hidden? s
@@ -126,61 +124,57 @@ to update-radii
     ifelse (fi) [
       set fi false
       set num pln1
-    ] [
+    ][
       set num (num-team1 * 3 + pln2)
     ]
     set xcor [xcor] of player num
     set ycor [ycor] of player num
-  ]
-      
+  ] 
 end
 
 to update-game
   ask balls [
     let slowdown true
-    while [slowdown]
-    [
+    while [slowdown] [
       set slowdown false
-      ask patches in-radius abs speed
-      [
-        if pcolor = grey - 0.1 [ set slowdown true ]
-        if pcolor = grey + 0.1 [ set slowdown true ]
+      ask patches in-radius abs speed [
+        ifelse (pcolor = grey - 0.1) [ 
+          set slowdown true 
+        ][ if (pcolor = grey + 0.1) [ 
+          set slowdown true 
+        ]]
       ]
-      if slowdown [ set speed speed - 0.5 ]
+      if slowdown [ 
+        set speed speed - 0.5 
+      ]
     ]
     ; check goal
     if (in [pcolor] of patches in-radius 1 black ) [
       ifelse (xcor < 0) [
         set score1 score1 + 1
-      ] [
+      ][
         set score2 score2 + 1
       ]
       setxy 0 0
       set speed 0
     ]
     
-    ifelse at-foot = true
-    [
+    ifelse (at-foot = true) [
       set speed 0
       setxy [xcor] of owner ([ycor] of owner - 1)
-    ]
-    [
+    ][ ;else
       ; kick
       set speed speed * drag
       ask players in-radius 2 [
-        ask balls
-        [
-          if owner != myself and speed < 4
-          [
+        ask balls [
+          if (owner != myself and speed < 4) [
             set at-foot true
             set owner myself
             set speed 0
           ]
         ]
-        
       ]
     ]
-
     
     bounce
     fd (-1 * speed)
