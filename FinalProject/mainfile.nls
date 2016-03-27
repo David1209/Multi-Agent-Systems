@@ -151,9 +151,9 @@ to update-game
     ; check goal
     if (in [pcolor] of patches in-radius 1 black ) [
       ifelse (xcor < 0) [
-        set score1 score1 + 1
-      ][
         set score2 score2 + 1
+      ][
+        set score1 score1 + 1
       ]
       setxy 0 0
       set speed 0

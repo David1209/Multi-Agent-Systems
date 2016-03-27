@@ -114,7 +114,7 @@ num-team2
 num-team2
 1
 10
-5
+9
 1
 1
 NIL
